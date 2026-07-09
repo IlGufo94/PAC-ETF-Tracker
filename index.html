@@ -1,0 +1,1703 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PAC ETF Tracker – Directa SIM</title>
+<style>
+:root {
+  --blue:#1a56db; --blue-light:#ebf5ff; --blue-dark:#1341a8;
+  --green:#057a55; --green-light:#f3faf7;
+  --red:#e02424; --red-light:#fdf2f2;
+  --yellow:#fdf6b2; --gold:#e3a008;
+  --purple:#7e3af2; --purple-light:#f3f0ff;
+  --gray-50:#f9fafb; --gray-100:#f3f4f6; --gray-200:#e5e7eb;
+  --gray-300:#d1d5db; --gray-400:#9ca3af; --gray-600:#4b5563;
+  --gray-700:#374151; --gray-800:#1f2937;
+  --hbg:#1e3a5f;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',Arial,sans-serif;font-size:13px;background:var(--gray-100);color:var(--gray-800)}
+
+/* HEADER */
+#app-header{background:var(--hbg);color:white;padding:11px 20px;display:flex;align-items:center;gap:12px}
+#app-header h1{font-size:17px;font-weight:700}
+#hdr-sub{font-size:11px;opacity:.65}
+#hdr-right{margin-left:auto;display:flex;gap:8px;align-items:center}
+#hdr-date{font-size:11px;opacity:.7}
+
+/* TABS */
+#tabs{display:flex;background:white;border-bottom:2px solid var(--gray-200);overflow-x:auto;flex-shrink:0}
+.tab-btn{padding:10px 14px;border:none;background:none;cursor:pointer;font-size:12px;font-weight:500;
+  color:var(--gray-600);white-space:nowrap;border-bottom:3px solid transparent;margin-bottom:-2px;transition:all .15s}
+.tab-btn:hover{background:var(--gray-50);color:var(--gray-800)}
+.tab-btn.active{color:var(--blue);border-bottom-color:var(--blue)}
+
+/* CONTENT */
+.tab-content{display:none;padding:18px}
+.tab-content.active{display:block}
+
+/* CARDS */
+.card{background:white;border-radius:8px;border:1px solid var(--gray-200);margin-bottom:14px;overflow:hidden}
+.card-header{background:var(--hbg);color:white;padding:9px 16px;font-weight:600;font-size:12px;display:flex;align-items:center;justify-content:space-between}
+.card-body{padding:14px}
+.card-note{background:var(--yellow);border-left:3px solid var(--gold);padding:7px 12px;font-size:11px;margin-bottom:12px;border-radius:0 4px 4px 0}
+
+/* TABLES */
+.tbl-wrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:12px}
+th{background:var(--gray-100);color:var(--gray-700);padding:6px 9px;text-align:left;border:1px solid var(--gray-200);font-weight:600;white-space:nowrap}
+td{padding:5px 9px;border:1px solid var(--gray-200);vertical-align:middle}
+tr:nth-child(even) td{background:var(--gray-50)}
+td.ic{background:var(--yellow)}
+td.fc{background:var(--blue-light)}
+.pos{color:var(--green);font-weight:600}
+.neg{color:var(--red);font-weight:600}
+.neu{color:var(--gray-600)}
+
+/* FORMS */
+input[type=text],input[type=number],input[type=date],select{
+  border:1px solid var(--gray-300);border-radius:4px;padding:5px 7px;
+  font-size:12px;width:100%;background:white}
+input:focus,select:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 2px #1a56db22}
+.btn{padding:6px 12px;border:none;border-radius:5px;cursor:pointer;font-size:12px;font-weight:600;transition:opacity .15s}
+.btn-primary{background:var(--blue);color:white}
+.btn-danger{background:var(--red);color:white}
+.btn-success{background:var(--green);color:white}
+.btn-warn{background:var(--gold);color:white}
+.btn-purple{background:var(--purple);color:white}
+.btn:hover{opacity:.85}
+.btn-sm{padding:2px 7px;font-size:11px}
+
+/* KPI GRID */
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:14px}
+.kpi{background:white;border:1px solid var(--gray-200);border-radius:8px;padding:12px 14px;position:relative;overflow:hidden}
+.kpi::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--accent,var(--blue))}
+.kpi-label{font-size:10px;color:var(--gray-400);text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px}
+.kpi-value{font-size:18px;font-weight:700}
+.kpi-sub{font-size:10px;color:var(--gray-400);margin-top:2px}
+
+/* ADD FORM */
+.add-form{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:7px;align-items:end;margin-top:12px;padding-top:12px;border-top:1px solid var(--gray-200)}
+.fg{display:flex;flex-direction:column;gap:3px}
+.fg label{font-size:10px;color:var(--gray-600);font-weight:500;text-transform:uppercase}
+
+/* CHARTS */
+.chart-row{display:flex;gap:16px;flex-wrap:wrap;align-items:flex-start}
+.chart-box{flex:1;min-width:280px;background:white;border-radius:8px;border:1px solid var(--gray-200);padding:14px}
+.chart-title{font-size:12px;font-weight:600;color:var(--gray-700);margin-bottom:10px}
+canvas{display:block;width:100%!important}
+.legend-wrap{display:flex;flex-direction:column;gap:5px;margin-top:10px}
+.legend-item{display:flex;align-items:center;gap:7px;font-size:11px}
+.ldot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+
+/* BADGE */
+.badge{display:inline-block;padding:1px 6px;border-radius:10px;font-size:10px;font-weight:600}
+.badge-blue{background:var(--blue-light);color:var(--blue)}
+.badge-green{background:var(--green-light);color:var(--green)}
+.badge-red{background:var(--red-light);color:var(--red)}
+.badge-purple{background:var(--purple-light);color:var(--purple)}
+
+/* RIBILANCIAMENTO */
+.ribilanciamento-bar{height:8px;border-radius:4px;background:var(--gray-200);overflow:hidden;margin-top:3px}
+.ribilanciamento-fill{height:100%;border-radius:4px;transition:width .4s}
+
+/* REGISTRO – sort arrows */
+.sort-arrow{display:inline-block;margin-left:4px;font-size:9px;opacity:.45}
+th.sortable{cursor:pointer;user-select:none;white-space:nowrap}
+th.sortable:hover{background:var(--gray-200)}
+th.sort-asc .sort-arrow::after{content:'▲';opacity:1}
+th.sort-desc .sort-arrow::after{content:'▼';opacity:1}
+th.sort-asc,th.sort-desc{color:var(--blue)}
+/* REGISTRO – filter bar */
+.reg-filter-bar{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;align-items:center}
+.reg-filter-bar input,.reg-filter-bar select{height:28px;font-size:11px;padding:2px 6px;width:auto;flex:1;min-width:80px;max-width:160px}
+.reg-filter-bar label{font-size:10px;color:var(--gray-600);font-weight:600;white-space:nowrap}
+.reg-filter-bar .btn-sm{height:28px}
+
+/* REGISTRO – modale modifica */
+#edit-modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:1000;align-items:center;justify-content:center}
+#edit-modal-overlay.open{display:flex}
+#edit-modal{background:white;border-radius:10px;padding:22px 24px;width:min(96vw,560px);box-shadow:0 8px 32px rgba(0,0,0,.22);position:relative}
+#edit-modal h3{color:var(--hbg);font-size:14px;margin-bottom:14px;border-bottom:1px solid var(--gray-200);padding-bottom:6px}
+#edit-modal .edit-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+#edit-modal .fg-full{grid-column:1/-1}
+#edit-modal .edit-actions{display:flex;gap:8px;margin-top:16px;justify-content:flex-end}
+.btn-edit-row{background:var(--blue-light);color:var(--blue);border:1px solid #c7d8f8;font-size:10px;padding:2px 7px;border-radius:4px;cursor:pointer;font-weight:600}
+.btn-edit-row:hover{background:var(--blue);color:white}
+
+/* GUIDE */
+.guide-section{margin-bottom:18px}
+.guide-section h3{color:var(--hbg);font-size:13px;margin-bottom:6px;border-bottom:1px solid var(--gray-200);padding-bottom:3px}
+.guide-section p,.guide-section li{font-size:12px;line-height:1.7;color:var(--gray-700)}
+.guide-section ul,.guide-section ol{padding-left:16px}
+
+/* TOOLTIP */
+.tt{position:relative;cursor:help}
+.tt:hover::after{content:attr(data-tip);position:absolute;bottom:120%;left:50%;transform:translateX(-50%);
+  background:#333;color:white;padding:4px 8px;border-radius:4px;font-size:10px;white-space:nowrap;z-index:999}
+
+/* DASHBOARD SPARKLINE */
+.sparkline-canvas{height:40px!important}
+
+@media(max-width:600px){
+  .kpi-value{font-size:15px}
+  .add-form{grid-template-columns:1fr 1fr}
+  .chart-row{flex-direction:column}
+}
+</style>
+</head>
+<body>
+
+<div id="app-header">
+  <div>
+    <h1>📊 PAC ETF Tracker</h1>
+    <span id="hdr-sub">Directa SIM – Piano di Accumulo Capitale</span>
+  </div>
+  <div id="hdr-right">
+    <button class="btn btn-warn" onclick="exportJSON()" style="font-size:11px">⬇ Backup JSON</button>
+    <label class="btn btn-purple" style="cursor:pointer;font-size:11px">⬆ Importa JSON<input type="file" accept=".json" style="display:none" onchange="importJSON(event)"></label>
+    <span id="hdr-date" style="font-size:11px;opacity:.7"></span>
+  </div>
+</div>
+
+<div id="tabs">
+  <button class="tab-btn active"   onclick="showTab('dashboard','this')">🏠 Dashboard</button>
+  <button class="tab-btn"          onclick="showTab('config','this')">⚙️ Configurazione</button>
+  <button class="tab-btn"          onclick="showTab('registro','this')">📝 Registro</button>
+  <button class="tab-btn"          onclick="showTab('prezzi','this')">💹 Prezzi</button>
+  <button class="tab-btn"          onclick="showTab('riepilogo','this')">📈 Riepilogo</button>
+  <button class="tab-btn"          onclick="showTab('andamento','this')">📉 Andamento</button>
+  <button class="tab-btn"          onclick="showTab('allocation','this')">🥧 Allocazione</button>
+  <button class="tab-btn"          onclick="showTab('ribilanciamento','this')">⚖️ Ribilanciamento</button>
+  <button class="tab-btn"          onclick="showTab('guida','this')">📖 Guida</button>
+</div>
+
+<!-- ==================== DASHBOARD ==================== -->
+<div id="tab-dashboard" class="tab-content active">
+  <div id="kpi-grid" class="kpi-grid"></div>
+  <div class="chart-row">
+    <div class="chart-box" style="flex:2;min-width:320px">
+      <div class="chart-title">Andamento cumulativo (Investito vs Mercato)</div>
+      <div style="position:relative;height:160px"><canvas id="dash-line-chart"></canvas></div>
+    </div>
+    <div class="chart-box" style="flex:1;min-width:240px">
+      <div class="chart-title">Asset Allocation</div>
+      <div style="position:relative;height:200px"><canvas id="dash-pie-chart"></canvas></div>
+      <div class="legend-wrap" id="dash-pie-legend"></div>
+    </div>
+  </div>
+  <div class="chart-row" style="margin-top:14px">
+    <div class="chart-box" style="flex:1;min-width:280px">
+      <div class="chart-title">Performance per ETF (P&L %)</div>
+      <div style="position:relative;height:180px"><canvas id="dash-bar-chart"></canvas></div>
+    </div>
+    <div class="chart-box" style="flex:1;min-width:260px">
+      <div class="chart-title" style="display:flex;align-items:center;justify-content:space-between">
+        <span>Macro Allocazione</span>
+        <button class="btn-edit-row" onclick="toggleMacroEdit()" id="macro-edit-btn" style="font-size:10px">✏️ Target</button>
+      </div>
+      <!-- Pannello target editabili (nascosto di default) -->
+      <div id="macro-edit-panel" style="display:none;background:var(--gray-50);border:1px solid var(--gray-200);border-radius:6px;padding:10px;margin-bottom:10px;font-size:11px">
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;align-items:end">
+          <div class="fg"><label style="font-size:10px;color:var(--gray-600)">⬜ Azionario %</label><input type="number" id="mt-az" min="0" max="100" step="1" style="width:100%"></div>
+          <div class="fg"><label style="font-size:10px;color:var(--gray-600)">🔵 Obbligaz. %</label><input type="number" id="mt-ob" min="0" max="100" step="1" style="width:100%"></div>
+          <div class="fg"><label style="font-size:10px;color:var(--gray-600)">🟡 Oro %</label><input type="number" id="mt-or" min="0" max="100" step="1" style="width:100%"></div>
+        </div>
+        <div style="margin-top:8px;display:flex;gap:6px;align-items:center">
+          <button class="btn btn-primary btn-sm" onclick="saveMacroTargets()">💾 Salva</button>
+          <span id="macro-edit-msg" style="font-size:10px;color:var(--green)"></span>
+        </div>
+      </div>
+      <div style="position:relative;height:180px"><canvas id="dash-macro-chart"></canvas></div>
+      <div id="dash-macro-legend" class="legend-wrap" style="margin-top:8px"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== CONFIGURAZIONE ==================== -->
+<div id="tab-config" class="tab-content">
+  <div class="card">
+    <div class="card-header">ETF – ANAGRAFICA E CONFIGURAZIONE PAC</div>
+    <div class="card-body">
+      <div class="card-note">Celle <strong>gialle</strong> = input modificabili. Tutte le sezioni si aggiornano automaticamente quando modifichi qui.</div>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Ticker</th><th>ISIN</th><th>Nome</th><th>Tipo Asset</th><th>Asset Class</th><th>Aliquota</th><th>Importo PAC (€)</th><th>Giorno PAC</th><th></th></tr></thead>
+          <tbody id="config-tbody"></tbody>
+        </table>
+      </div>
+      <div class="add-form">
+        <div class="fg"><label>Ticker*</label><input type="text" id="n-tick" placeholder="VWCE" maxlength="10"></div>
+        <div class="fg"><label>ISIN</label><input type="text" id="n-isin" placeholder="IE00BK5BQT80" maxlength="12"></div>
+        <div class="fg"><label>Nome</label><input type="text" id="n-nome" placeholder="Vanguard FTSE All-World"></div>
+        <div class="fg"><label>Tipo</label><select id="n-tipo"><option>Azionario</option><option>Obblig. Governativo</option><option>Commodity</option><option>Altro</option></select></div>
+        <div class="fg"><label>Asset Class</label><input type="text" id="n-class" placeholder="Global"></div>
+        <div class="fg"><label>Aliquota</label><select id="n-aliq"><option value="0.26">26%</option><option value="0.125">12.50%</option></select></div>
+        <div class="fg"><label>Importo PAC</label><input type="text" id="n-pac" placeholder="1 quota / 50"></div>
+        <div class="fg"><label>Giorno</label><input type="number" id="n-giorno" min="1" max="31" value="23"></div>
+        <div class="fg"><label>&nbsp;</label><button class="btn btn-primary" onclick="addEtf()">+ Aggiungi ETF</button></div>
+      </div>
+      <div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--gray-200);font-size:12px;color:var(--gray-600)">
+        <strong>Aliquote fiscali:</strong>
+        Azionario/Commodity <input type="text" id="aliq-az" value="26%" style="width:55px;display:inline-block;margin:0 6px">
+        Titoli di Stato EU <input type="text" id="aliq-gov" value="12.50%" style="width:60px;display:inline-block;margin:0 6px"><br>
+        <em style="font-size:10px;color:var(--gray-400)">IBCI, VGEA, CSBGE3 → 12,5% (art. 2 D.Lgs. 239/1996) | EIMI, SMEA, VWCE, XDEV, SGLN → 26%</em>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== REGISTRO ACQUISTI ==================== -->
+<div id="tab-registro" class="tab-content">
+  <div class="card">
+    <div class="card-header">REGISTRO ACQUISTI – PAC + Spot
+      <div style="display:flex;gap:6px">
+        <button class="btn btn-success btn-sm" onclick="exportCSV()">⬇ CSV</button>
+        <label class="btn btn-primary btn-sm" style="cursor:pointer">⬆ CSV<input type="file" accept=".csv" style="display:none" onchange="importCSV(event)"></label>
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="card-note">Seleziona il Ticker → ISIN e dati si compilano automaticamente. <strong>Importo Totale</strong> = Quote × Prezzo (calcolato auto).</div>
+      <div class="add-form">
+        <div class="fg"><label>Data*</label><input type="text" id="r-data" placeholder="GG/MM/AAAA" maxlength="10" style="width:110px"></div>
+        <div class="fg"><label>Ticker*</label><select id="r-ticker" onchange="autoFillRegistro()"></select></div>
+        <div class="fg"><label>Tipo</label><select id="r-tipo"><option>PAC</option><option>SPOT</option></select></div>
+        <div class="fg"><label>N. Quote</label><input type="number" id="r-quote" step="0.000001" min="0" placeholder="1" oninput="calcImporto()"></div>
+        <div class="fg"><label>Prezzo/Quota (€)</label><input type="number" id="r-prezzo" step="0.01" min="0" oninput="calcImporto()"></div>
+        <div class="fg"><label>Importo Tot. (€)</label><input type="number" id="r-importo" step="0.01" min="0" placeholder="auto"></div>
+        <div class="fg"><label>Commissioni (€)</label><input type="number" id="r-comm" step="0.01" min="0" value="0"></div>
+        <div class="fg"><label>Note</label><input type="text" id="r-note" placeholder="opz."></div>
+        <div class="fg"><label>&nbsp;</label><button class="btn btn-primary" onclick="addAcquisto()">+ Aggiungi</button></div>
+      </div>
+      <div style="margin-top:6px;font-size:11px;color:var(--gray-400)" id="r-autofill-preview"></div>
+      <!-- FILTRI REGISTRO -->
+      <div class="reg-filter-bar" id="reg-filter-bar">
+        <label>🔍 Filtri:</label>
+        <input type="text" id="flt-ticker" placeholder="Ticker…" oninput="renderRegistro()">
+        <select id="flt-tipo" onchange="renderRegistro()">
+          <option value="">Tutti i tipi</option>
+          <option value="PAC">PAC</option>
+          <option value="SPOT">SPOT</option>
+        </select>
+        <input type="text" id="flt-note" placeholder="Cerca nelle note…" oninput="renderRegistro()">
+        <input type="text" id="flt-data-da" placeholder="Da GG/MM/AAAA" maxlength="10" oninput="renderRegistro()" style="max-width:130px">
+        <input type="text" id="flt-data-a" placeholder="A GG/MM/AAAA" maxlength="10" oninput="renderRegistro()" style="max-width:130px">
+        <button class="btn btn-warn btn-sm" onclick="resetFiltriRegistro()">✕ Reset</button>
+        <span id="reg-count" style="font-size:10px;color:var(--gray-400);margin-left:4px"></span>
+      </div>
+      <div class="tbl-wrap" style="margin-top:4px">
+        <table>
+          <thead>
+            <tr>
+              <th class="sortable" onclick="sortRegistro('data')"     id="th-reg-data">    Data     <span class="sort-arrow"></span></th>
+              <th class="sortable" onclick="sortRegistro('ticker')"   id="th-reg-ticker">  Ticker   <span class="sort-arrow"></span></th>
+              <th>ISIN</th>
+              <th class="sortable" onclick="sortRegistro('tipo')"     id="th-reg-tipo">    Tipo     <span class="sort-arrow"></span></th>
+              <th class="sortable" onclick="sortRegistro('quote')"    id="th-reg-quote">   N. Quote <span class="sort-arrow"></span></th>
+              <th class="sortable" onclick="sortRegistro('prezzo')"   id="th-reg-prezzo">  Prezzo (€)<span class="sort-arrow"></span></th>
+              <th class="sortable" onclick="sortRegistro('importo')"  id="th-reg-importo"> Importo (€)<span class="sort-arrow"></span></th>
+              <th class="sortable" onclick="sortRegistro('comm')"     id="th-reg-comm">    Comm. (€)<span class="sort-arrow"></span></th>
+              <th>Note</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="registro-tbody"></tbody>
+          <tfoot id="registro-tfoot"></tfoot>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== PREZZI CORRENTI ==================== -->
+<div id="tab-prezzi" class="tab-content">
+  <div class="card">
+    <div class="card-header">PREZZI CORRENTI – Aggiornamento Manuale</div>
+    <div class="card-body">
+      <div class="card-note">
+        Clicca sul link <strong>justETF</strong> per aprire la scheda dell'ETF → copia il prezzo corrente → incollalo qui.
+        Poi clicca <strong>Salva & Aggiorna</strong>.
+      </div>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Ticker</th><th>ISIN</th><th>Nome ETF</th><th>Prezzo Corrente (€) ✏️</th><th>Data Agg. ✏️</th><th>justETF</th></tr></thead>
+          <tbody id="prezzi-tbody"></tbody>
+        </table>
+      </div>
+      <div style="margin-top:10px;display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+        <button class="btn btn-primary" onclick="savePrezzi()">💾 Salva & Aggiorna tutto</button>
+        <button class="btn" style="background:var(--gray-200);color:var(--gray-700)" onclick="setAllDateOggi()">📅 Imposta oggi su tutte le date</button>
+        <span style="font-size:11px;color:var(--green)" id="prezzi-msg"></span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== RIEPILOGO + MENSILE (UNIFICATO) ==================== -->
+<div id="tab-riepilogo" class="tab-content">
+  <div id="riepilogo-kpi" class="kpi-grid"></div>
+
+  <!-- PORTAFOGLIO -->
+  <div class="card">
+    <div class="card-header">RIEPILOGO PORTAFOGLIO – Situazione Corrente</div>
+    <div class="card-body">
+      <div class="card-note">Aggiornato automaticamente da Registro + Prezzi Correnti. Aggiorna i prezzi prima della consultazione.</div>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr>
+            <th>Ticker</th><th>Nome</th><th>Aliquota</th><th>Tot. Quote</th>
+            <th>PMC (€)</th><th>Prezzo Corr. (€)</th><th>Val. Investito (€)</th>
+            <th>Val. Mercato (€)</th><th>P&L Lordo (€)</th><th>P&L %</th>
+            <th>Tasse Stimate (€)</th><th>P&L Netto (€)</th>
+          </tr></thead>
+          <tbody id="riepilogo-tbody"></tbody>
+          <tfoot id="riepilogo-tfoot"></tfoot>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- MENSILE -->
+  <div class="card" style="margin-top:6px">
+    <div class="card-header">RIEPILOGO MENSILE – Versamenti e Budget personale</div>
+    <div class="card-body">
+      <div class="card-note">
+        Inserisci <strong>Stipendio Netto</strong> e <strong>Spese Mensili</strong> per calcolare quante risorse rimangono e che % stai investendo.<br>
+        <strong>% su stipendio</strong> = Totale investito / Stipendio &nbsp;|&nbsp;
+        <strong>% su disponibile</strong> = Totale investito / (Stipendio + Liquidità Aggiuntiva − Spese) — più significativa.
+      </div>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr>
+            <th>Mese</th>
+            <th>N. Op.</th>
+            <th>PAC (€)</th>
+            <th>SPOT (€)</th>
+            <th>Totale inv. (€)</th>
+            <th>Comm. (€)</th>
+            <th>Stipendio Netto (€) ✏️</th>
+            <th>Liquidità Aggiuntiva (€) ✏️</th>
+            <th>Spese Mensili (€) ✏️</th>
+            <th>Disponibile (€)</th>
+            <th>% su stipendio</th>
+            <th>% su disponibile</th>
+          </tr></thead>
+          <tbody id="mensile-tbody"></tbody>
+          <tfoot id="mensile-tfoot"></tfoot>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== ANDAMENTO NEL TEMPO ==================== -->
+<div id="tab-andamento" class="tab-content">
+  <div class="card">
+    <div class="card-header">ANDAMENTO CUMULATIVO – Investito vs Valore di Mercato per Mese</div>
+    <div class="card-body">
+      <div class="card-note">Grafico basato sui prezzi storici degli acquisti (approssimazione). Il valore di mercato mensile è stimato usando i prezzi di acquisto come proxy.</div>
+      <div style="position:relative;height:260px"><canvas id="andamento-chart"></canvas></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-header">PERFORMANCE PER ETF – P&L % ordinato</div>
+    <div class="card-body">
+      <div style="position:relative;height:240px"><canvas id="perf-bar-chart"></canvas></div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== ASSET ALLOCATION ==================== -->
+<div id="tab-allocation" class="tab-content">
+  <div class="chart-row">
+    <div class="chart-box" style="flex:1;min-width:260px">
+      <div class="chart-title">Allocazione per Asset Class</div>
+      <div style="position:relative;height:260px"><canvas id="pie-chart"></canvas></div>
+      <div class="legend-wrap" id="pie-legend"></div>
+    </div>
+    <div class="chart-box" style="flex:1;min-width:260px">
+      <div class="chart-title">Allocazione per Tipo Asset</div>
+      <div style="position:relative;height:260px"><canvas id="pie-tipo-chart"></canvas></div>
+      <div class="legend-wrap" id="pie-tipo-legend"></div>
+    </div>
+  </div>
+  <div class="card" style="margin-top:14px">
+    <div class="card-header">TABELLA ALLOCAZIONE</div>
+    <div class="card-body">
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Asset Class</th><th>Tipo</th><th>Val. Mercato (€)</th><th>% Portafoglio</th></tr></thead>
+          <tbody id="allocation-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== RIBILANCIAMENTO ==================== -->
+<div id="tab-ribilanciamento" class="tab-content">
+  <div class="card">
+    <div class="card-header">⚖️ RIBILANCIAMENTO – Allocazione Attuale vs Target</div>
+    <div class="card-body">
+      <div class="card-note">Imposta le % target per ogni ETF (totale deve fare 100%). La tabella mostra quanto comprare/vendere per ribilanciare.</div>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr>
+            <th>Ticker</th><th>Nome</th><th>Val. Attuale (€)</th><th>% Attuale</th>
+            <th>% Target ✏️</th><th>Δ (€)</th><th>Azione</th>
+          </tr></thead>
+          <tbody id="rib-tbody"></tbody>
+          <tfoot id="rib-tfoot"></tfoot>
+        </table>
+      </div>
+      <div style="margin-top:10px;font-size:11px;color:var(--gray-400)" id="rib-sum-note"></div>
+      <button class="btn btn-primary" style="margin-top:8px" onclick="saveTargets()">💾 Salva target</button>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-header">Grafico Attuale vs Target</div>
+    <div class="card-body"><div style="position:relative;height:220px"><canvas id="rib-chart"></canvas></div></div>
+  </div>
+</div>
+
+
+
+<!-- ==================== GUIDA ==================== -->
+<div id="tab-guida" class="tab-content">
+  <div class="card">
+    <div class="card-header">📖 GUIDA UTENTE COMPLETA</div>
+    <div class="card-body">
+      <div class="guide-section">
+        <h3>Come iniziare</h3>
+        <ol>
+          <li><strong>⚙️ Configurazione:</strong> verifica l'anagrafica ETF. Celle gialle = editabili. Aggiungi nuovi ETF con il form in basso.</li>
+          <li><strong>💹 Prezzi Correnti:</strong> clicca sul link justETF di ogni ETF → copia il prezzo → incollalo → Salva & Aggiorna.</li>
+          <li><strong>📝 Registro:</strong> inserisci ogni acquisto. Scegli il ticker dal dropdown → ISIN e dati si compilano automaticamente.</li>
+          <li><strong>📈 Riepilogo:</strong> aggiornato automaticamente. Mostra PMC, P&L e tasse stimate.</li>
+          <li><strong>⚖️ Ribilanciamento:</strong> imposta i % target e scopri quanto acquistare per riportare il portafoglio in linea.</li>
+        </ol>
+      </div>
+      <div class="guide-section">
+        <h3>Formule utilizzate</h3>
+        <ul>
+          <li><strong>PMC:</strong> Σ(Importo) / Σ(Quote) per ticker</li>
+          <li><strong>Valore Investito:</strong> Σ(Quote) × PMC</li>
+          <li><strong>Valore Mercato:</strong> Σ(Quote) × Prezzo Corrente</li>
+          <li><strong>P&L Lordo:</strong> Valore Mercato − Valore Investito</li>
+          <li><strong>Tasse Stimate:</strong> MAX(0, P&L Lordo) × Aliquota</li>
+          <li><strong>P&L Netto:</strong> P&L Lordo − Tasse Stimate</li>
+        </ul>
+      </div>
+      <div class="guide-section">
+        <h3>Aliquote fiscali italiane (2026)</h3>
+        <ul>
+          <li><span class="badge badge-red">26%</span> EIMI, SMEA, VWCE, XDEV, SGLN (Azionario e Commodity)</li>
+          <li><span class="badge badge-green">12,5%</span> IBCI, VGEA, CSBGE3 (Titoli di Stato EU – art. 2 D.Lgs. 239/1996)</li>
+          <li>Le tasse sono stimate sulle plusvalenze latenti. Si pagano solo al momento della vendita.</li>
+        </ul>
+      </div>
+      <div class="guide-section">
+        <h3>Backup e sincronizzazione multi-dispositivo</h3>
+        <ul>
+          <li>I dati sono salvati nel <strong>localStorage</strong> del browser — persistono finché non svuoti la cache.</li>
+          <li>Usa <strong>⬇ Backup JSON</strong> (header) per esportare tutti i dati (ETF, acquisti, prezzi, target, stipendi).</li>
+          <li>Usa <strong>⬆ Importa JSON</strong> per ripristinare su un altro dispositivo in un click.</li>
+          <li>Per il Registro acquisti puoi usare anche Esporta/Importa CSV.</li>
+          <li>Google Drive può aprire questo file ma <em>non salva lo stato</em> tra dispositivi — usa il backup JSON.</li>
+        </ul>
+      </div>
+      <div class="guide-section">
+        <h3>Tickers su Borsa Italiana e Directa SIM</h3>
+        <ul>
+          <li>Tutti gli ETF sono su <strong>Borsa Italiana ETFplus</strong></li>
+          <li>Su Directa SIM usa il ticker diretto (VWCE, EIMI, SMEA…)</li>
+          <li>Su Google Finance usa il prefisso <strong>BIT:</strong> (es. BIT:VWCE)</li>
+          <li>VWCE, SMEA, EIMI, XDEV → solo quote intere su Directa</li>
+          <li>SGLN, IBCI, VGEA/CSBGE3 → acquisto per importo fisso in EUR (quote frazionate)</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== MODALE MODIFICA ACQUISTO ==================== -->
+<div id="edit-modal-overlay" onclick="if(event.target===this)closeEditModal()">
+  <div id="edit-modal">
+    <h3>✏️ Modifica acquisto</h3>
+    <div class="edit-grid">
+      <div class="fg"><label>Data (GG/MM/AAAA)*</label><input type="text" id="em-data" placeholder="GG/MM/AAAA" maxlength="10"></div>
+      <div class="fg"><label>Ticker*</label><select id="em-ticker" onchange="emAutoFill()"></select></div>
+      <div class="fg"><label>Tipo</label>
+        <select id="em-tipo"><option>PAC</option><option>SPOT</option></select>
+      </div>
+      <div class="fg"><label>N. Quote</label><input type="number" id="em-quote" step="0.000001" min="0" oninput="emCalcImporto()"></div>
+      <div class="fg"><label>Prezzo/Quota (€)</label><input type="number" id="em-prezzo" step="0.0001" min="0" oninput="emCalcImporto()"></div>
+      <div class="fg"><label>Importo Tot. (€)</label><input type="number" id="em-importo" step="0.01" min="0"></div>
+      <div class="fg"><label>Commissioni (€)</label><input type="number" id="em-comm" step="0.01" min="0"></div>
+      <div class="fg fg-full"><label>Note</label><input type="text" id="em-note" placeholder="opzionale"></div>
+    </div>
+    <div class="edit-actions">
+      <button class="btn" style="background:var(--gray-200);color:var(--gray-700)" onclick="closeEditModal()">Annulla</button>
+      <button class="btn btn-primary" onclick="saveEditModal()">💾 Salva modifiche</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.6/dist/chart.umd.min.js"></script>
+<script>
+// ===================== DATI DEFAULT =====================
+const DEFAULT_ETF = [
+  {ticker:'EIMI',  isin:'IE00BKM4GZ66', nome:'iShares Core MSCI EM IMI',       tipo:'Azionario',           classe:'Emerging Markets',    aliquota:0.26,  pac:'1 quota', giorno:23},
+  {ticker:'SMEA',  isin:'IE00B4K48X80', nome:'iShares Core MSCI Europe',        tipo:'Azionario',           classe:'Europa',               aliquota:0.26,  pac:'1 quota', giorno:23},
+  {ticker:'VWCE',  isin:'IE00BK5BQT80', nome:'Vanguard FTSE All-World Acc',     tipo:'Azionario',           classe:'Global',               aliquota:0.26,  pac:'1 quota', giorno:23},
+  {ticker:'IBCI',  isin:'IE00B0M62X26', nome:'iShares EUR Infl Lnkd Govt',      tipo:'Obblig. Governativo', classe:'Titoli di Stato EUR',  aliquota:0.125, pac:'50',       giorno:23},
+  {ticker:'VGEA',  isin:'IE00BH04GL39', nome:'Vanguard EUR Govt Bond',          tipo:'Obblig. Governativo', classe:'Titoli di Stato EUR',  aliquota:0.125, pac:'70',       giorno:23},
+  {ticker:'SGLN',  isin:'IE00B4ND3602', nome:'iShares Physical Gold ETC',       tipo:'Commodity',           classe:'Oro',                  aliquota:0.26,  pac:'30',       giorno:23},
+  {ticker:'CSBGE3',isin:'IE00B3VTMJ91', nome:'iShares Euro Govt Bond 1-3yr',    tipo:'Obblig. Governativo', classe:'Titoli di Stato EUR',  aliquota:0.125, pac:'75',       giorno:23},
+  {ticker:'XDEV',  isin:'IE00BL25JM42', nome:'Xtrackers MSCI World Value 1C',   tipo:'Azionario',           classe:'Global Value',         aliquota:0.26,  pac:'1 quota', giorno:23},
+];
+const DEFAULT_ACQUISTI = [
+  {data:'2026-02-23',ticker:'VWCE', isin:'IE00BK5BQT80',tipo:'PAC', quote:1,       prezzo:148,    importo:148,       comm:0, note:''},
+  {data:'2026-02-23',ticker:'SMEA', isin:'IE00B4K48X80',tipo:'PAC', quote:1,       prezzo:99.76,  importo:99.76,     comm:0, note:''},
+  {data:'2026-03-23',ticker:'VWCE', isin:'IE00BK5BQT80',tipo:'PAC', quote:1,       prezzo:143.32, importo:143.32,    comm:0, note:''},
+  {data:'2026-03-23',ticker:'EIMI', isin:'IE00BKM4GZ66',tipo:'PAC', quote:1,       prezzo:40.26,  importo:40.26,     comm:0, note:''},
+  {data:'2026-03-23',ticker:'SMEA', isin:'IE00B4K48X80',tipo:'PAC', quote:1,       prezzo:91.92,  importo:91.92,     comm:0, note:''},
+  {data:'2026-04-01',ticker:'VWCE', isin:'IE00BK5BQT80',tipo:'PAC', quote:1,       prezzo:144.88, importo:144.88,    comm:0, note:''},
+  {data:'2026-04-01',ticker:'SMEA', isin:'IE00B4K48X80',tipo:'PAC', quote:1,       prezzo:95.27,  importo:95.27,     comm:0, note:''},
+  {data:'2026-04-01',ticker:'EIMI', isin:'IE00BKM4GZ66',tipo:'PAC', quote:1,       prezzo:40.64,  importo:40.64,     comm:0, note:''},
+  {data:'2026-04-23',ticker:'VWCE', isin:'IE00BK5BQT80',tipo:'PAC', quote:1,       prezzo:153.8,  importo:153.8,     comm:0, note:''},
+  {data:'2026-04-23',ticker:'SMEA', isin:'IE00B4K48X80',tipo:'PAC', quote:1,       prezzo:98.13,  importo:98.13,     comm:0, note:''},
+  {data:'2026-04-23',ticker:'EIMI', isin:'IE00BKM4GZ66',tipo:'PAC', quote:1,       prezzo:44.06,  importo:44.06,     comm:0, note:''},
+  {data:'2026-05-25',ticker:'SMEA', isin:'IE00B4K48X80',tipo:'PAC', quote:1,       prezzo:102.64, importo:102.64,    comm:0, note:''},
+  {data:'2026-05-25',ticker:'VWCE', isin:'IE00BK5BQT80',tipo:'PAC', quote:1,       prezzo:162.77, importo:162.77,    comm:0, note:''},
+  {data:'2026-05-25',ticker:'EIMI', isin:'IE00BKM4GZ66',tipo:'PAC', quote:1,       prezzo:47.4,   importo:47.4,      comm:0, note:''},
+  {data:'2026-06-02',ticker:'IBCI', isin:'IE00B0M62X26',tipo:'PAC', quote:0.209881,prezzo:238.23, importo:50.0,      comm:0, note:'PAC 50€ giu-26'},
+  {data:'2026-06-02',ticker:'VGEA', isin:'IE00BH04GL39',tipo:'PAC', quote:3.109968,prezzo:24.116, importo:75.0,      comm:0, note:'PAC 70€ giu-26'},
+  {data:'2026-06-02',ticker:'SGLN', isin:'IE00B4ND3602',tipo:'PAC', quote:0.331345,prezzo:75.45,  importo:25.0,      comm:0, note:'PAC 30€ giu-26'},
+  {data:'2026-06-02',ticker:'SGLN', isin:'IE00B4ND3602',tipo:'SPOT',quote:0.163419,prezzo:75.45,  importo:12.33,     comm:0, note:''},
+  {data:'2026-07-02',ticker:'IBCI', isin:'IE00B0M62X26',tipo:'PAC', quote:0.210544,prezzo:237.48, importo:50.0,      comm:0, note:''},
+  {data:'2026-07-02',ticker:'VGEA', isin:'IE00BH04GL39',tipo:'PAC', quote:3.1,     prezzo:24.14,  importo:74.834,    comm:0, note:''},
+  {data:'2026-07-02',ticker:'SGLN', isin:'IE00B4ND3602',tipo:'PAC', quote:0.33,    prezzo:70.68,  importo:23.32,     comm:0, note:''},
+  {data:'2026-07-02',ticker:'VWCE', isin:'IE00BK5BQT80',tipo:'PAC', quote:1,       prezzo:168.85, importo:168.85,    comm:0, note:''},
+  {data:'2026-07-02',ticker:'EIMI', isin:'IE00BKM4GZ66',tipo:'PAC', quote:1,       prezzo:48.32,  importo:48.32,     comm:0, note:''},
+  {data:'2026-07-02',ticker:'SMEA', isin:'IE00B4K48X80',tipo:'PAC', quote:1,       prezzo:105.55, importo:105.55,    comm:0, note:''},
+];
+const DEFAULT_PREZZI = {
+  EIMI:{prezzo:48.32,  data:'2026-07-03'},
+  SMEA:{prezzo:105.55, data:'2026-07-03'},
+  VWCE:{prezzo:168.85, data:'2026-07-03'},
+  IBCI:{prezzo:237.14, data:'2026-07-03'},
+  VGEA:{prezzo:24.14,  data:'2026-07-03'},
+  SGLN:{prezzo:70.68,  data:'2026-07-03'},
+  CSBGE3:{prezzo:0,   data:''},
+  XDEV:{prezzo:0,     data:''},
+};
+const DEFAULT_TARGETS = {EIMI:9.64,SMEA:25.12,VWCE:39.74,IBCI:7.98,VGEA:9.98,SGLN:7.55,CSBGE3:0,XDEV:0};
+
+// ===================== STATE =====================
+function ld(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch{return d}}
+function sv(k,v){localStorage.setItem(k,JSON.stringify(v))}
+
+let etfList  = ld('pac_etf',  DEFAULT_ETF);
+let acquisti = ld('pac_acq',  DEFAULT_ACQUISTI);
+let prezzi   = ld('pac_prz',  DEFAULT_PREZZI);
+let stipendi = ld('pac_stip', {});
+let spese    = ld('pac_spese', {});
+let extra    = ld('pac_extra', {});
+let targets  = ld('pac_tgt',  DEFAULT_TARGETS);
+
+function saveAll(){sv('pac_etf',etfList);sv('pac_acq',acquisti);sv('pac_prz',prezzi);sv('pac_stip',stipendi);sv('pac_spese',spese);sv('pac_extra',extra);sv('pac_tgt',targets)}
+
+// ===================== UTILS =====================
+const PIE_COLORS=['#1a56db','#057a55','#e3a008','#e02424','#9061f9','#0694a2','#ff8c00','#6b7280','#10b981','#f59e0b'];
+const _charts={};
+function destroyChart(id){if(_charts[id]){_charts[id].destroy();delete _charts[id];}}
+function f2(n){return isNaN(n)||n===null?'–':n.toFixed(2)}
+function f4(n){return isNaN(n)||n===null?'–':n.toFixed(4)}
+function fp(n){return isNaN(n)||n===null?'–':(n*100).toFixed(2)+'%'}
+function fd(d){
+  if(!d)return'';
+  const s=d.split('T')[0];
+  const[y,m,g]=s.split('-');
+  return g+'/'+m+'/'+y;
+}
+function cpn(n){return n>0.001?'pos':n<-0.001?'neg':'neu'}
+function getEtf(ticker){return etfList.find(e=>e.ticker===ticker)}
+
+// ===================== TABS =====================
+function showTab(id,btn){
+  document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('tab-'+id).classList.add('active');
+  // find and activate the button
+  document.querySelectorAll('.tab-btn').forEach(b=>{if(b.getAttribute('onclick')&&b.getAttribute('onclick').includes("'"+id+"'"))b.classList.add('active')});
+  if(id==='dashboard')    renderDashboard();
+  if(id==='registro')     renderRegistro();
+  if(id==='prezzi')       renderPrezzi();
+  if(id==='riepilogo')    renderRiepilogo();
+  if(id==='andamento')    renderAndamento();
+  if(id==='allocation')   renderAllocation();
+  if(id==='ribilanciamento') renderRibilanciamento();
+  if(id==='mensile')      renderMensile();
+}
+
+// ===================== CALCOLI PORTAFOGLIO =====================
+function calcPortafoglio(){
+  const res={};
+  etfList.forEach(etf=>{
+    const acq=acquisti.filter(a=>a.ticker===etf.ticker);
+    const totQ=acq.reduce((s,a)=>s+a.quote,0);
+    const totI=acq.reduce((s,a)=>s+a.importo,0);
+    const pmc=totQ>0?totI/totQ:0;
+    const pc=prezzi[etf.ticker]?.prezzo||0;
+    const vm=totQ*pc;
+    const pl=vm-totI;
+    const tasse=pl>0?pl*etf.aliquota:0;
+    res[etf.ticker]={ticker:etf.ticker,nome:etf.nome,aliquota:etf.aliquota,
+      classe:etf.classe,tipo:etf.tipo,
+      totQ,pmc,pc,valI:totI,vm,pl,tasse,plN:pl-tasse,
+      plPct:totI>0?pl/totI:0};
+  });
+  return res;
+}
+
+// ===================== DASHBOARD =====================
+function renderDashboard(){
+  const data=calcPortafoglio();
+  const vals=Object.values(data);
+  const totI=vals.reduce((s,d)=>s+d.valI,0);
+  const totVM=vals.reduce((s,d)=>s+d.vm,0);
+  const totPL=totVM-totI;
+  const totTasse=vals.reduce((s,d)=>s+d.tasse,0);
+  const totN=vals.reduce((s,d)=>s+d.plN,0);
+  const plPct=totI>0?totPL/totI:0;
+
+  const kpis=[
+    {label:'Valore Investito',  value:'€ '+f2(totI),    sub:'',           accent:'#6b7280'},
+    {label:'Valore di Mercato', value:'€ '+f2(totVM),   sub:'',           accent:'#1a56db'},
+    {label:'P&L Lordo',         value:'€ '+f2(totPL),   sub:fp(plPct),    accent:totPL>=0?'#057a55':'#e02424'},
+    {label:'Tasse Stimate',     value:'€ '+f2(totTasse),sub:'su plusval.', accent:'#e3a008'},
+    {label:'P&L Netto',         value:'€ '+f2(totN),    sub:'dopo tasse', accent:totN>=0?'#057a55':'#e02424'},
+    {label:'N. ETF attivi',     value:vals.filter(d=>d.totQ>0).length,sub:'in portafoglio',accent:'#9061f9'},
+  ];
+  document.getElementById('kpi-grid').innerHTML=kpis.map(k=>`
+    <div class="kpi" style="--accent:${k.accent}">
+      <div class="kpi-label">${k.label}</div>
+      <div class="kpi-value" style="color:${k.accent}">${k.value}</div>
+      ${k.sub?`<div class="kpi-sub">${k.sub}</div>`:''}
+    </div>`).join('');
+
+  renderDashLine(data);
+  renderDashPie(data);
+  renderDashBar(data);
+  renderDashMacro(data);
+}
+
+function renderDashLine(data){
+  // Build monthly cumulative invested and estimated market value
+  const byMese={};
+  const sorted=[...acquisti].sort((a,b)=>a.data.localeCompare(b.data));
+  sorted.forEach(a=>{
+    const d=new Date(a.data);
+    const key=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');
+    if(!byMese[key]) byMese[key]={inv:0,vm:0};
+    byMese[key].inv+=a.importo;
+    byMese[key].vm+=a.importo; // proxy: use purchase price for historical
+  });
+  const mesi=Object.keys(byMese).sort();
+  let cumI=0,cumVM=0;
+  const labels=[],dI=[],dVM=[];
+  mesi.forEach(m=>{
+    cumI+=byMese[m].inv;
+    cumVM+=byMese[m].vm;
+    labels.push(m);
+    dI.push(+cumI.toFixed(2));
+    dVM.push(+cumVM.toFixed(2));
+  });
+  // Last point: use real market value
+  const totVM=Object.values(data).reduce((s,d)=>s+d.vm,0);
+  if(labels.length>0){
+    dVM[dVM.length-1]=+totVM.toFixed(2);
+  }
+  drawLineChart('dash-line-chart',labels,
+    [{label:'Investito',data:dI,color:'#9ca3af'},{label:'Valore Mercato',data:dVM,color:'#1a56db'}]);
+}
+
+function renderDashPie(data){
+  const byClasse={};
+  Object.values(data).forEach(d=>{if(d.vm>0){byClasse[d.classe]=(byClasse[d.classe]||0)+d.vm}});
+  const labels=Object.keys(byClasse),values=labels.map(k=>byClasse[k]);
+  const tot=values.reduce((s,v)=>s+v,0);
+  drawDonut('dash-pie-chart',labels,values,PIE_COLORS,'dash-pie-legend',tot);
+}
+
+function renderDashBar(data){
+  const active=Object.values(data).filter(d=>d.totQ>0).sort((a,b)=>b.plPct-a.plPct);
+  const labels=active.map(d=>d.ticker);
+  const values=active.map(d=>+(d.plPct*100).toFixed(2));
+  const colors=values.map(v=>v>=0?'#057a55':'#e02424');
+  drawBarChart('dash-bar-chart',labels,values,colors,'P&L %');
+}
+
+// Macro target: {az, ob, or} in %
+const DEFAULT_MACRO_TARGETS = {az:70, ob:20, or:10};
+let macroTargets = ld('pac_macro_tgt', DEFAULT_MACRO_TARGETS);
+
+function toggleMacroEdit(){
+  const panel = document.getElementById('macro-edit-panel');
+  const open = panel.style.display === 'none';
+  panel.style.display = open ? 'block' : 'none';
+  if(open){
+    document.getElementById('mt-az').value = macroTargets.az;
+    document.getElementById('mt-ob').value = macroTargets.ob;
+    document.getElementById('mt-or').value = macroTargets.or;
+    document.getElementById('macro-edit-msg').textContent = '';
+  }
+}
+
+function saveMacroTargets(){
+  const az = +document.getElementById('mt-az').value || 0;
+  const ob = +document.getElementById('mt-ob').value || 0;
+  const or_= +document.getElementById('mt-or').value || 0;
+  const tot = az + ob + or_;
+  if(tot !== 100){
+    document.getElementById('macro-edit-msg').textContent = '⚠ La somma deve essere 100% (ora: '+tot+'%)';
+    document.getElementById('macro-edit-msg').style.color = 'var(--red)';
+    return;
+  }
+  macroTargets = {az, ob, or: or_};
+  sv('pac_macro_tgt', macroTargets);
+  document.getElementById('macro-edit-msg').textContent = '✓ Salvato';
+  document.getElementById('macro-edit-msg').style.color = 'var(--green)';
+  setTimeout(()=>{ document.getElementById('macro-edit-panel').style.display='none'; }, 800);
+  renderDashMacro(calcPortafoglio());
+}
+
+function renderDashMacro(data){
+  // Raggruppa per macro-categoria: Azionario, Obbligazionario, Oro/Commodity
+  const macro = {Azionario:0, Obbligazionario:0, Oro:0};
+  Object.values(data).forEach(d=>{
+    if(d.vm <= 0) return;
+    const t = d.tipo || '';
+    if(t === 'Azionario')           macro.Azionario       += d.vm;
+    else if(t.startsWith('Obblig')) macro.Obbligazionario += d.vm;
+    else if(t === 'Commodity')      macro.Oro             += d.vm;
+    else                            macro.Azionario       += d.vm; // fallback
+  });
+
+  const tot = macro.Azionario + macro.Obbligazionario + macro.Oro;
+  const pctAz = tot > 0 ? (macro.Azionario       / tot * 100) : 0;
+  const pctOb = tot > 0 ? (macro.Obbligazionario  / tot * 100) : 0;
+  const pctOr = tot > 0 ? (macro.Oro              / tot * 100) : 0;
+
+  const labels  = ['Azionario', 'Obbligazionario', 'Oro'];
+  const attuale = [+pctAz.toFixed(1), +pctOb.toFixed(1), +pctOr.toFixed(1)];
+  const target  = [macroTargets.az, macroTargets.ob, macroTargets.or];
+  const colors  = ['#1a56db', '#057a55', '#e3a008'];
+
+  destroyChart('dash-macro-chart');
+  const canvas = document.getElementById('dash-macro-chart');
+  if(!canvas) return;
+  const ctx = canvas.getContext('2d');
+  _charts['dash-macro-chart'] = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [
+        {
+          label: 'Attuale %',
+          data: attuale,
+          backgroundColor: colors.map(c=>c+'cc'),
+          borderColor: colors,
+          borderWidth: 2,
+          borderRadius: 5,
+          borderSkipped: false
+        },
+        {
+          label: 'Target %',
+          data: target,
+          backgroundColor: 'transparent',
+          borderColor: colors,
+          borderWidth: 2.5,
+          borderDash: [5,3],
+          type: 'bar',
+          borderRadius: 5,
+          borderSkipped: false,
+          // Rendiamo visivamente il target come bordo tratteggiato
+          backgroundColor: colors.map(c=>c+'22'),
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          position: 'top',
+          labels: {font:{size:10,family:'Segoe UI'}, usePointStyle:true, padding:10}
+        },
+        tooltip: {
+          backgroundColor: 'rgba(30,58,95,0.92)',
+          callbacks: {
+            label: c => ' ' + c.dataset.label + ': ' + c.parsed.y.toFixed(1) + '%'
+          }
+        }
+      },
+      scales: {
+        x: { grid:{display:false}, ticks:{font:{size:11,family:'Segoe UI'},color:'#374151'} },
+        y: {
+          min: 0, max: 100,
+          grid: {color:'#f3f4f6'},
+          ticks: {
+            font:{size:10,family:'Segoe UI'}, color:'#9ca3af',
+            callback: v => v + '%'
+          }
+        }
+      }
+    }
+  });
+
+  // Legenda con delta
+  const leg = document.getElementById('dash-macro-legend');
+  if(!leg) return;
+  leg.innerHTML = labels.map((l,i)=>{
+    const delta = attuale[i] - target[i];
+    const dStr  = (delta >= 0 ? '+' : '') + delta.toFixed(1) + '%';
+    // rosso (sotto target) o blu (sopra target), scala di intensità
+    let dColor;
+    if(delta < 0){
+      const intensity = Math.min(Math.abs(delta) / 10, 1);
+      const lightness = Math.round(65 - intensity * 25); // da ~65% (chiaro) a ~40% (scuro)
+      dColor = `hsl(0, 75%, ${lightness}%)`;
+    } else if(delta > 0){
+      const intensity = Math.min(delta / 10, 1);
+      const lightness = Math.round(65 - intensity * 25);
+      dColor = `hsl(220, 75%, ${lightness}%)`;
+    } else {
+      dColor = 'var(--gray-400)';
+    }
+    return `<div class="legend-item">
+      <div class="ldot" style="background:${colors[i]}"></div>
+      <div><strong>${l}</strong> — Attuale: <strong>${attuale[i]}%</strong> | Target: ${target[i]}% | Δ: <strong style="color:${dColor}">${dStr}</strong></div>
+    </div>`;
+  }).join('');
+}
+
+function renderNextPac(){} // mantenuta vuota per compatibilità (rimossa dalla dashboard)
+
+// ===================== CONFIGURAZIONE =====================
+function renderConfig(){
+  const tbody=document.getElementById('config-tbody');
+  tbody.innerHTML='';
+  etfList.forEach((etf,i)=>{
+    tbody.innerHTML+=`<tr>
+      <td class="ic"><input type="text" value="${etf.ticker}" onchange="etfList[${i}].ticker=this.value.toUpperCase();saveAll();renderConfig()" style="width:65px"></td>
+      <td class="ic"><input type="text" value="${etf.isin}" onchange="etfList[${i}].isin=this.value;saveAll()" style="width:115px"></td>
+      <td class="ic"><input type="text" value="${etf.nome}" onchange="etfList[${i}].nome=this.value;saveAll()" style="width:210px"></td>
+      <td class="ic"><select onchange="etfList[${i}].tipo=this.value;saveAll()">
+        ${['Azionario','Obblig. Governativo','Commodity','Altro'].map(o=>`<option${etf.tipo===o?' selected':''}>${o}</option>`).join('')}
+      </select></td>
+      <td class="ic"><input type="text" value="${etf.classe}" onchange="etfList[${i}].classe=this.value;saveAll()" style="width:120px"></td>
+      <td class="ic"><select onchange="etfList[${i}].aliquota=+this.value;saveAll()">
+        <option value="0.26"${etf.aliquota===0.26?' selected':''}>26%</option>
+        <option value="0.125"${etf.aliquota===0.125?' selected':''}>12.50%</option>
+      </select></td>
+      <td class="ic"><input type="text" value="${etf.pac}" onchange="etfList[${i}].pac=this.value;saveAll()" style="width:75px"></td>
+      <td class="ic"><input type="number" value="${etf.giorno}" onchange="etfList[${i}].giorno=+this.value;saveAll()" style="width:55px" min="1" max="31"></td>
+      <td><button class="btn btn-danger btn-sm" onclick="removeEtf(${i})">✕</button></td>
+    </tr>`;
+  });
+  updateTickerSelect();
+}
+
+function addEtf(){
+  const t=document.getElementById('n-tick').value.trim().toUpperCase();
+  if(!t){alert('Inserisci il Ticker');return}
+  etfList.push({ticker:t,isin:document.getElementById('n-isin').value.trim(),nome:document.getElementById('n-nome').value.trim(),
+    tipo:document.getElementById('n-tipo').value,classe:document.getElementById('n-class').value.trim(),
+    aliquota:+document.getElementById('n-aliq').value,pac:document.getElementById('n-pac').value.trim(),
+    giorno:+document.getElementById('n-giorno').value||23});
+  ['n-tick','n-isin','n-nome','n-class','n-pac'].forEach(id=>document.getElementById(id).value='');
+  saveAll();renderConfig();
+}
+
+function removeEtf(i){
+  if(!confirm(`Rimuovere ${etfList[i].ticker}?`))return;
+  etfList.splice(i,1);saveAll();renderConfig();
+}
+
+function updateTickerSelect(){
+  const sel=document.getElementById('r-ticker');if(!sel)return;
+  const cur=sel.value;
+  sel.innerHTML=etfList.map(e=>`<option value="${e.ticker}">${e.ticker} – ${e.nome.substring(0,28)}</option>`).join('');
+  if(cur)sel.value=cur;
+}
+
+// ===================== REGISTRO =====================
+// Stato ordinamento registro
+let _regSortCol  = 'data';
+let _regSortDir  = 1; // 1=asc, -1=desc
+
+function sortRegistro(col){
+  if(_regSortCol === col) _regSortDir *= -1;
+  else { _regSortCol = col; _regSortDir = 1; }
+  renderRegistro();
+}
+
+function resetFiltriRegistro(){
+  ['flt-ticker','flt-note','flt-data-da','flt-data-a'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  const tipo=document.getElementById('flt-tipo');if(tipo)tipo.value='';
+  renderRegistro();
+}
+
+function _parseIsoFromDisplay(s){
+  // Accetta GG/MM/AAAA oppure YYYY-MM-DD → restituisce YYYY-MM-DD o ''
+  if(!s)return'';
+  if(/^\d{2}\/\d{2}\/\d{4}$/.test(s)){const[g,m,y]=s.split('/');return`${y}-${m}-${g}`;}
+  if(/^\d{4}-\d{2}-\d{2}$/.test(s))return s;
+  return'';
+}
+
+function autoFillRegistro(){
+  const ticker=document.getElementById('r-ticker').value;
+  const etf=getEtf(ticker);
+  const prev=document.getElementById('r-autofill-preview');
+  if(etf){
+    prev.innerHTML=`<span style="color:var(--green)">✓ ${etf.nome} | ISIN: ${etf.isin} | Aliquota: ${(etf.aliquota*100).toFixed(2)}% | PAC: ${etf.pac}</span>`;
+  }
+  calcImporto();
+}
+
+function calcImporto(){
+  const q=+document.getElementById('r-quote').value||0;
+  const p=+document.getElementById('r-prezzo').value||0;
+  if(q>0&&p>0) document.getElementById('r-importo').value=(q*p).toFixed(4);
+}
+
+function renderRegistro(){
+  // NON chiamare updateTickerSelect() qui: modifica il DOM del form
+  // e su alcuni browser causa il mancato aggiornamento della tabella.
+  const tbody=document.getElementById('registro-tbody');
+  const tfoot=document.getElementById('registro-tfoot');
+  if(!tbody||!tfoot) return;
+
+  // --- Lettura filtri ---
+  const fTicker  = (document.getElementById('flt-ticker')?.value||'').trim().toLowerCase();
+  const fTipo    = (document.getElementById('flt-tipo')?.value||'');
+  const fNote    = (document.getElementById('flt-note')?.value||'').trim().toLowerCase();
+  const fDataDa  = _parseIsoFromDisplay(document.getElementById('flt-data-da')?.value||'');
+  const fDataA   = _parseIsoFromDisplay(document.getElementById('flt-data-a')?.value||'');
+
+  // --- Filtraggio ---
+  let lista = acquisti.map((a,i)=>({...a, _origIdx:i}));
+  if(fTicker) lista = lista.filter(a=>a.ticker.toLowerCase().includes(fTicker));
+  if(fTipo)   lista = lista.filter(a=>a.tipo === fTipo);
+  if(fNote)   lista = lista.filter(a=>(a.note||'').toLowerCase().includes(fNote));
+  if(fDataDa) lista = lista.filter(a=>a.data >= fDataDa);
+  if(fDataA)  lista = lista.filter(a=>a.data <= fDataA);
+
+  // --- Ordinamento ---
+  const col = _regSortCol;
+  const dir = _regSortDir;
+  lista.sort((a,b)=>{
+    let va=a[col], vb=b[col];
+    if(col==='data') return dir*(va<vb?-1:va>vb?1:0);
+    if(typeof va==='number'&&typeof vb==='number') return dir*(va-vb);
+    va=String(va||'').toLowerCase(); vb=String(vb||'').toLowerCase();
+    return dir*(va<vb?-1:va>vb?1:0);
+  });
+
+  // --- Aggiorna icone header ---
+  ['data','ticker','tipo','quote','prezzo','importo','comm'].forEach(c=>{
+    const th=document.getElementById('th-reg-'+c);
+    if(!th) return;
+    th.classList.remove('sort-asc','sort-desc');
+    if(c===col) th.classList.add(dir===1?'sort-asc':'sort-desc');
+  });
+
+  // --- Render righe: costruisci HTML in array, assegna UNA VOLTA SOLA ---
+  let totInv=0, totComm=0;
+  const rows=[];
+  lista.forEach(a=>{
+    const i = a._origIdx;
+    totInv+=a.importo; totComm+=a.comm;
+    rows.push(`<tr>
+      <td>${fd(a.data)}</td>
+      <td><strong>${a.ticker}</strong></td>
+      <td style="font-size:10px;color:var(--gray-400)">${a.isin||'–'}</td>
+      <td><span class="badge ${a.tipo==='PAC'?'badge-blue':'badge-green'}">${a.tipo}</span></td>
+      <td>${f4(a.quote)}</td>
+      <td>${f4(a.prezzo)}</td>
+      <td class="fc"><strong>${f2(a.importo)}</strong></td>
+      <td>${f2(a.comm)}</td>
+      <td style="font-size:11px">${a.note||'–'}</td>
+      <td style="display:flex;gap:4px">
+        <button class="btn-edit-row" onclick="openEditModal(${i})">✏️</button>
+        <button class="btn btn-danger btn-sm" onclick="removeAcq(${i})">✕</button>
+      </td>
+    </tr>`);
+  });
+  tbody.innerHTML = rows.join('');
+
+  tfoot.innerHTML=`<tr style="background:var(--gray-100);font-weight:700">
+    <td colspan="6">TOTALE FILTRATI (${lista.length})</td>
+    <td>${f2(totInv)}</td><td>${f2(totComm)}</td><td colspan="2"></td></tr>`;
+
+  const cnt=document.getElementById('reg-count');
+  if(cnt) cnt.textContent=lista.length+' / '+acquisti.length+' operazioni';
+}
+
+function addAcquisto(){
+  const ticker=document.getElementById('r-ticker').value;
+  const q=+document.getElementById('r-quote').value||0;
+  const p=+document.getElementById('r-prezzo').value||0;
+  let importo=+document.getElementById('r-importo').value;
+  if(!importo)importo=q*p;
+  const etf=getEtf(ticker);
+  if(!q&&!importo){alert('Inserisci almeno Quote o Importo');return}
+  const rawData=document.getElementById('r-data').value.trim();
+  let isoData='';
+  if(/^\d{2}\/\d{2}\/\d{4}$/.test(rawData)){
+    const[g,m,y]=rawData.split('/');isoData=`${y}-${m}-${g}`;
+  } else if(/^\d{4}-\d{2}-\d{2}$/.test(rawData)){
+    isoData=rawData;
+  } else {
+    isoData=new Date().toISOString().split('T')[0];
+  }
+  acquisti.push({
+    data:isoData,
+    ticker,isin:etf?etf.isin:'',tipo:document.getElementById('r-tipo').value,
+    quote:q,prezzo:p,importo:+importo.toFixed(6),
+    comm:+document.getElementById('r-comm').value||0,
+    note:document.getElementById('r-note').value.trim()
+  });
+  ['r-quote','r-prezzo','r-importo','r-comm','r-note'].forEach(id=>document.getElementById(id).value='');
+  saveAll();
+  updateTickerSelect();
+  renderRegistro();
+}
+
+// ===================== MODALE MODIFICA =====================
+let _editIdx = null;
+
+function openEditModal(origIdx){
+  _editIdx = origIdx;
+  const a = acquisti[origIdx];
+  if(!a) return;
+  // Popola select ticker
+  const sel = document.getElementById('em-ticker');
+  sel.innerHTML = etfList.map(e=>`<option value="${e.ticker}"${e.ticker===a.ticker?' selected':''}>${e.ticker} – ${e.nome.substring(0,28)}</option>`).join('');
+  sel.value = a.ticker;
+  document.getElementById('em-data').value    = fd(a.data);
+  document.getElementById('em-tipo').value    = a.tipo;
+  document.getElementById('em-quote').value   = a.quote;
+  document.getElementById('em-prezzo').value  = a.prezzo;
+  document.getElementById('em-importo').value = a.importo;
+  document.getElementById('em-comm').value    = a.comm;
+  document.getElementById('em-note').value    = a.note||'';
+  document.getElementById('edit-modal-overlay').classList.add('open');
+}
+
+function closeEditModal(){
+  document.getElementById('edit-modal-overlay').classList.remove('open');
+  _editIdx = null;
+}
+
+function emCalcImporto(){
+  const q=+document.getElementById('em-quote').value||0;
+  const p=+document.getElementById('em-prezzo').value||0;
+  if(q>0&&p>0) document.getElementById('em-importo').value=(q*p).toFixed(4);
+}
+
+function emAutoFill(){
+  emCalcImporto();
+}
+
+function saveEditModal(){
+  if(_editIdx===null) return;
+  const rawData = document.getElementById('em-data').value.trim();
+  let isoData='';
+  if(/^\d{2}\/\d{2}\/\d{4}$/.test(rawData)){
+    const[g,m,y]=rawData.split('/');isoData=`${y}-${m}-${g}`;
+  } else if(/^\d{4}-\d{2}-\d{2}$/.test(rawData)){
+    isoData=rawData;
+  } else {
+    alert('Formato data non valido. Usa GG/MM/AAAA');return;
+  }
+  const ticker = document.getElementById('em-ticker').value;
+  const etf    = getEtf(ticker);
+  const q      = +document.getElementById('em-quote').value||0;
+  const p      = +document.getElementById('em-prezzo').value||0;
+  let importo  = +document.getElementById('em-importo').value;
+  if(!importo) importo=q*p;
+  acquisti[_editIdx] = {
+    data:isoData,
+    ticker,
+    isin: etf?etf.isin:(acquisti[_editIdx].isin||''),
+    tipo: document.getElementById('em-tipo').value,
+    quote:q, prezzo:p,
+    importo:+importo.toFixed(6),
+    comm:+document.getElementById('em-comm').value||0,
+    note:document.getElementById('em-note').value.trim()
+  };
+  saveAll();
+  closeEditModal();
+  updateTickerSelect();
+  renderRegistro();
+}
+
+function removeAcq(i){
+  if(!confirm('Rimuovere questo acquisto?'))return;
+  acquisti.splice(i,1);saveAll();renderRegistro();
+}
+
+function exportCSV(){
+  const hdr='Data,Ticker,ISIN,Tipo,Quote,Prezzo,Importo,Commissioni,Note';
+  const rows=acquisti.map(a=>[a.data,a.ticker,a.isin,a.tipo,a.quote,a.prezzo,a.importo,a.comm,a.note||''].join(','));
+  dl(hdr+'\n'+rows.join('\n'),'PAC_ETF_Acquisti.csv','text/csv');
+}
+
+function importCSV(e){
+  const f=e.target.files[0];if(!f)return;
+  const r=new FileReader();
+  r.onload=ev=>{
+    const lines=ev.target.result.split('\n').slice(1).filter(l=>l.trim());
+    acquisti=lines.map(l=>{const[data,ticker,isin,tipo,quote,prezzo,importo,comm,note]=l.split(',');
+      return{data,ticker,isin,tipo,quote:+quote,prezzo:+prezzo,importo:+importo,comm:+comm,note:note||''}});
+    saveAll();renderRegistro();alert(`Importate ${acquisti.length} righe.`);
+  };
+  r.readAsText(f);
+}
+
+// ===================== PREZZI CORRENTI =====================
+function renderPrezzi(){
+  const tbody=document.getElementById('prezzi-tbody');
+  tbody.innerHTML='';
+  etfList.forEach(etf=>{
+    const p=prezzi[etf.ticker]||{prezzo:0,data:''};
+    const link=etf.isin?`<a href="https://www.justetf.com/it/etf-profile.html?isin=${etf.isin}" target="_blank" style="color:var(--blue);font-weight:600;font-size:11px">🔗 justETF</a>`:'–';
+    tbody.innerHTML+=`<tr>
+      <td><strong>${etf.ticker}</strong></td>
+      <td style="font-size:10px;color:var(--gray-400)">${etf.isin}</td>
+      <td style="font-size:11px">${etf.nome}</td>
+      <td class="ic"><input type="number" id="p-${etf.ticker}" value="${p.prezzo}" step="0.0001" min="0" style="width:110px" oninput="autoDataOggi('${etf.ticker}')"></td>
+      <td class="ic"><input type="text" id="pd-${etf.ticker}" value="${fd(p.data||'')}" placeholder="GG/MM/AAAA" maxlength="10" style="width:110px" title="Aggiornato automaticamente quando modifichi il prezzo"></td>
+      <td>${link}</td>
+    </tr>`;
+  });
+}
+
+function _oggiDisplay(){
+  const d=new Date();
+  const gg=String(d.getDate()).padStart(2,'0');
+  const mm=String(d.getMonth()+1).padStart(2,'0');
+  return gg+'/'+mm+'/'+d.getFullYear();
+}
+
+function autoDataOggi(ticker){
+  const el=document.getElementById('pd-'+ticker);
+  if(el) el.value=_oggiDisplay();
+}
+
+function setAllDateOggi(){
+  const oggi=_oggiDisplay();
+  etfList.forEach(etf=>{
+    const el=document.getElementById('pd-'+etf.ticker);
+    if(el) el.value=oggi;
+  });
+}
+
+function savePrezzi(){
+  etfList.forEach(etf=>{
+    const rawData=document.getElementById('pd-'+etf.ticker)?.value||'';
+    // Accetta sia GG/MM/AAAA che YYYY-MM-DD, normalizza a YYYY-MM-DD internamente
+    let isoData='';
+    if(/^\d{2}\/\d{2}\/\d{4}$/.test(rawData)){
+      const[g,m,y]=rawData.split('/');isoData=`${y}-${m}-${g}`;
+    } else if(/^\d{4}-\d{2}-\d{2}$/.test(rawData)){
+      isoData=rawData;
+    } else {
+      isoData=new Date().toISOString().split('T')[0];
+    }
+    prezzi[etf.ticker]={
+      prezzo:+(document.getElementById('p-'+etf.ticker)?.value||0),
+      data:isoData
+    };
+  });
+  saveAll();
+  const msg=document.getElementById('prezzi-msg');
+  msg.textContent='✓ Salvato: '+new Date().toLocaleTimeString('it-IT');
+  setTimeout(()=>msg.textContent='',3000);
+}
+
+// ===================== RIEPILOGO (portafoglio + mensile unificato) =====================
+function renderRiepilogo(){
+  const data=calcPortafoglio();
+  const vals=Object.values(data);
+  const tbody=document.getElementById('riepilogo-tbody');
+  const tfoot=document.getElementById('riepilogo-tfoot');
+  tbody.innerHTML='';
+  let tI=0,tVM=0,tPL=0,tTasse=0;
+  vals.forEach(d=>{
+    tI+=d.valI;tVM+=d.vm;tPL+=d.pl;tTasse+=d.tasse;
+    tbody.innerHTML+=`<tr>
+      <td><strong>${d.ticker}</strong></td>
+      <td style="font-size:11px">${d.nome}</td>
+      <td>${(d.aliquota*100).toFixed(2)}%</td>
+      <td>${f4(d.totQ)}</td>
+      <td>${f2(d.pmc)}</td>
+      <td>${d.pc>0?f2(d.pc):'<em style="color:var(--gray-400)">–</em>'}</td>
+      <td>${f2(d.valI)}</td>
+      <td>${f2(d.vm)}</td>
+      <td class="${cpn(d.pl)}">${f2(d.pl)}</td>
+      <td class="${cpn(d.plPct)}">${fp(d.plPct)}</td>
+      <td>${f2(d.tasse)}</td>
+      <td class="${cpn(d.plN)}">${f2(d.plN)}</td>
+    </tr>`;
+  });
+  const plPct=tI>0?tPL/tI:0;
+  const tN=tPL-tTasse;
+  tfoot.innerHTML=`<tr style="background:var(--gray-100);font-weight:700">
+    <td colspan="6">TOTALE PORTAFOGLIO</td>
+    <td>${f2(tI)}</td><td>${f2(tVM)}</td>
+    <td class="${cpn(tPL)}">${f2(tPL)}</td>
+    <td class="${cpn(plPct)}">${fp(plPct)}</td>
+    <td>${f2(tTasse)}</td>
+    <td class="${cpn(tN)}">${f2(tN)}</td>
+  </tr>`;
+  // KPIs
+  const kpiDiv=document.getElementById('riepilogo-kpi');
+  if(kpiDiv){
+    const items=[
+      {label:'Val. Investito',value:'€ '+f2(tI),accent:'#6b7280'},
+      {label:'Val. Mercato',value:'€ '+f2(tVM),accent:'#1a56db'},
+      {label:'P&L Lordo',value:'€ '+f2(tPL)+' ('+fp(plPct)+')',accent:tPL>=0?'#057a55':'#e02424'},
+      {label:'Tasse Stimate',value:'€ '+f2(tTasse),accent:'#e3a008'},
+      {label:'P&L Netto',value:'€ '+f2(tN),accent:tN>=0?'#057a55':'#e02424'},
+    ];
+    kpiDiv.innerHTML=items.map(k=>`<div class="kpi" style="--accent:${k.accent}"><div class="kpi-label">${k.label}</div><div class="kpi-value" style="color:${k.accent}">${k.value}</div></div>`).join('');
+  }
+  // Render mensile inside same tab
+  renderMensile();
+}
+
+// ===================== MENSILE (integrato nel riepilogo) =====================
+function renderMensile(){
+  const byMese={};
+  acquisti.forEach(a=>{
+    const d=new Date(a.data);
+    const key=String(d.getMonth()+1).padStart(2,'0')+'/'+d.getFullYear();
+    if(!byMese[key]) byMese[key]={pac:0,spot:0,comm:0,n:0};
+    if(a.tipo==='PAC') byMese[key].pac+=a.importo; else byMese[key].spot+=a.importo;
+    byMese[key].comm+=a.comm; byMese[key].n++;
+  });
+  const mesi=Object.keys(byMese).sort((a,b)=>{
+    const[ma,ya]=a.split('/');const[mb,yb]=b.split('/');
+    return(ya-yb)||(ma-mb);
+  });
+  let tP=0,tS=0,tC=0,tN=0;
+  const tbody=document.getElementById('mensile-tbody');
+  if(!tbody)return;
+  tbody.innerHTML='';
+  mesi.forEach(mese=>{
+    const m=byMese[mese];
+    const tot=m.pac+m.spot;
+    const stip=stipendi[mese]||0;
+    const spe=spese[mese]||0;
+    const ext=extra[mese]||0;
+    const reddito=stip+ext;
+    const disp=reddito>0?Math.max(0,reddito-spe):0;
+    const pctStip=stip>0?tot/stip:null;
+    const pctDisp=disp>0?tot/disp:null;
+    tP+=m.pac;tS+=m.spot;tC+=m.comm;tN+=m.n;
+
+    // Color % su disponibile: verde <30%, giallo 30-50%, rosso >50%
+    const colorDisp=pctDisp===null?'var(--gray-600)':pctDisp<0.3?'var(--green)':pctDisp<0.5?'var(--gold)':'var(--red)';
+    const colorStip=pctStip===null?'var(--gray-600)':pctStip<0.2?'var(--green)':pctStip<0.35?'var(--gold)':'var(--red)';
+
+    tbody.innerHTML+=`<tr>
+      <td><strong>${mese}</strong></td>
+      <td>${m.n}</td>
+      <td>${f2(m.pac)}</td>
+      <td>${f2(m.spot)}</td>
+      <td><strong>${f2(tot)}</strong></td>
+      <td>${f2(m.comm)}</td>
+      <td class="ic"><input type="number" value="${stip||''}" placeholder="es. 2500" style="width:90px"
+        onchange="stipendi['${mese}']=+this.value||0;saveAll();renderMensile()" step="0.01" min="0"></td>
+      <td class="ic" style="background:#f0fdf4"><input type="number" value="${ext||''}" placeholder="es. 500" style="width:90px;border-color:#057a55"
+        onchange="extra['${mese}']=+this.value||0;saveAll();renderMensile()" step="0.01" min="0"
+        title="Liquidità aggiuntiva: bonus, rimborsi, entrate straordinarie"></td>
+      <td class="ic"><input type="number" value="${spe||''}" placeholder="es. 1200" style="width:90px"
+        onchange="spese['${mese}']=+this.value||0;saveAll();renderMensile()" step="0.01" min="0"></td>
+      <td class="fc"><strong>${disp>0?f2(disp):'–'}</strong>${ext>0?`<span style="font-size:9px;color:var(--green);display:block">+${f2(ext)} extra</span>`:''}
+      </td>
+      <td>${pctStip!==null?`<span style="color:${colorStip};font-weight:600">${fp(pctStip)}</span>`:'–'}</td>
+      <td>${pctDisp!==null?`<span style="color:${colorDisp};font-weight:600">${fp(pctDisp)}</span>`:'–'}</td>
+    </tr>`;
+  });
+  const tfoot=document.getElementById('mensile-tfoot');
+  if(tfoot) tfoot.innerHTML=`<tr style="font-weight:700;background:var(--gray-100)">
+    <td>TOTALE</td><td>${tN}</td><td>${f2(tP)}</td><td>${f2(tS)}</td>
+    <td>${f2(tP+tS)}</td><td>${f2(tC)}</td><td colspan="6">–</td>
+  </tr>`;
+}
+function renderAndamento(){
+  const data=calcPortafoglio();
+  // Monthly cumulative
+  const byMese={};
+  const sorted=[...acquisti].sort((a,b)=>a.data.localeCompare(b.data));
+  sorted.forEach(a=>{
+    const d=new Date(a.data);
+    const key=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');
+    if(!byMese[key]) byMese[key]={inv:0};
+    byMese[key].inv+=a.importo;
+  });
+  const mesi=Object.keys(byMese).sort();
+  let cumI=0;
+  const labels=[],dI=[],dVM=[];
+  mesi.forEach((m,idx)=>{
+    cumI+=byMese[m].inv;
+    labels.push(m);
+    dI.push(+cumI.toFixed(2));
+    // For last month use real market, otherwise use invested as proxy
+    if(idx===mesi.length-1){
+      dVM.push(+Object.values(data).reduce((s,d)=>s+d.vm,0).toFixed(2));
+    } else {
+      dVM.push(+cumI.toFixed(2)); // proxy
+    }
+  });
+  drawLineChart('andamento-chart',labels,
+    [{label:'Cumulativo Investito',data:dI,color:'#9ca3af'},{label:'Valore di Mercato (stimato)',data:dVM,color:'#1a56db'}]);
+
+  // Bar chart performance
+  const active=Object.values(data).filter(d=>d.totQ>0).sort((a,b)=>b.plPct-a.plPct);
+  const bLabels=active.map(d=>d.ticker);
+  const bValues=active.map(d=>+(d.plPct*100).toFixed(2));
+  const bColors=bValues.map(v=>v>=0?'#057a55':'#e02424');
+  drawBarChart('perf-bar-chart',bLabels,bValues,bColors,'P&L %');
+}
+
+// ===================== ASSET ALLOCATION =====================
+function renderAllocation(){
+  const data=calcPortafoglio();
+  const byClasse={},byTipo={};
+  Object.values(data).forEach(d=>{
+    if(d.vm>0){
+      byClasse[d.classe]=(byClasse[d.classe]||0)+d.vm;
+      byTipo[d.tipo]=(byTipo[d.tipo]||0)+d.vm;
+    }
+  });
+  const tot=Object.values(byClasse).reduce((s,v)=>s+v,0);
+  const cLabels=Object.keys(byClasse),cVals=cLabels.map(k=>byClasse[k]);
+  const tLabels=Object.keys(byTipo), tVals=tLabels.map(k=>byTipo[k]);
+  drawDonut('pie-chart',cLabels,cVals,PIE_COLORS,'pie-legend',tot);
+  drawDonut('pie-tipo-chart',tLabels,tVals,PIE_COLORS.slice(3),'pie-tipo-legend',tot);
+  // Table
+  const tbody=document.getElementById('allocation-tbody');
+  tbody.innerHTML='';
+  Object.values(data).filter(d=>d.vm>0).sort((a,b)=>b.vm-a.vm).forEach((d,i)=>{
+    tbody.innerHTML+=`<tr>
+      <td><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:${PIE_COLORS[i%10]};margin-right:5px"></span>${d.classe}</td>
+      <td><span class="badge badge-blue">${d.tipo.substring(0,12)}</span></td>
+      <td>${f2(d.vm)}</td>
+      <td>${fp(tot>0?d.vm/tot:0)}</td>
+    </tr>`;
+  });
+  tbody.innerHTML+=`<tr style="font-weight:700;background:var(--gray-100)"><td colspan="2">TOTALE</td><td>${f2(tot)}</td><td>100.00%</td></tr>`;
+}
+
+// ===================== RIBILANCIAMENTO =====================
+function renderRibilanciamento(){
+  const data=calcPortafoglio();
+  const tot=Object.values(data).reduce((s,d)=>s+d.vm,0);
+  const tbody=document.getElementById('rib-tbody');
+  const tfoot=document.getElementById('rib-tfoot');
+  tbody.innerHTML='';
+  let totTarget=0;
+  const bLabels=[],bAtt=[],bTgt=[];
+  Object.values(data).forEach(d=>{
+    const attPct=tot>0?d.vm/tot*100:0;
+    const tgt=targets[d.ticker]||0;
+    totTarget+=tgt;
+    const delta=(tgt/100*tot)-d.vm;
+    const azione=Math.abs(delta)<0.5?'–':delta>0?`<span class="pos">▲ Compra €${f2(delta)}</span>`:`<span class="neg">▼ Vendi €${f2(Math.abs(delta))}</span>`;
+    bLabels.push(d.ticker);bAtt.push(+attPct.toFixed(1));bTgt.push(tgt);
+    tbody.innerHTML+=`<tr>
+      <td><strong>${d.ticker}</strong></td>
+      <td style="font-size:11px">${d.nome}</td>
+      <td>${f2(d.vm)}</td>
+      <td>${attPct.toFixed(1)}%</td>
+      <td class="ic"><input type="number" id="tgt-${d.ticker}" value="${tgt}" min="0" max="100" step="0.1"
+        oninput="updateRibSum()" style="width:70px">%</td>
+      <td class="${cpn(delta)}">${f2(Math.abs(delta))}</td>
+      <td>${azione}</td>
+    </tr>`;
+  });
+  tfoot.innerHTML=`<tr style="background:var(--gray-100);font-weight:700"><td colspan="3">Portafoglio totale: € ${f2(tot)}</td><td colspan="4" id="rib-tot-pct">Totale target: ${totTarget.toFixed(1)}% ${Math.abs(totTarget-100)<0.1?'<span style="color:var(--green)">✓</span>':'<span style="color:var(--red)">⚠ deve essere 100%</span>'}</td></tr>`;
+  drawGroupedBar('rib-chart',bLabels,
+    [{label:'Attuale %',data:bAtt,color:'#1a56db'},{label:'Target %',data:bTgt,color:'#e3a008'}]);
+}
+
+function updateRibSum(){
+  const tfoot=document.getElementById('rib-tfoot');
+  let sum=0;
+  etfList.forEach(e=>{const el=document.getElementById('tgt-'+e.ticker);if(el)sum+=+el.value||0});
+  const ok=Math.abs(sum-100)<0.1;
+  if(tfoot){
+    const cell=tfoot.querySelector('#rib-tot-pct');
+    if(cell)cell.innerHTML=`Totale target: ${sum.toFixed(1)}% ${ok?'<span style="color:var(--green)">✓</span>':'<span style="color:var(--red)">⚠ deve essere 100%</span>'}`;
+  }
+}
+
+function saveTargets(){
+  etfList.forEach(e=>{const el=document.getElementById('tgt-'+e.ticker);if(el)targets[e.ticker]=+el.value||0});
+  saveAll();
+  const note=document.getElementById('rib-sum-note');
+  note.textContent='✓ Target salvati: '+new Date().toLocaleTimeString('it-IT');
+  setTimeout(()=>note.textContent='',3000);
+}
+
+// ===================== ANDAMENTO =====================
+function exportJSON(){
+  const state={etfList,acquisti,prezzi,stipendi,spese,targets};
+  dl(JSON.stringify(state,null,2),'PAC_ETF_Backup_'+new Date().toISOString().split('T')[0]+'.json','application/json');
+}
+function importJSON(e){
+  const f=e.target.files[0];if(!f)return;
+  const r=new FileReader();
+  r.onload=ev=>{
+    try{
+      const s=JSON.parse(ev.target.result);
+      if(s.etfList)  etfList =s.etfList;
+      if(s.acquisti) acquisti=s.acquisti;
+      if(s.prezzi)   prezzi  =s.prezzi;
+      if(s.stipendi) stipendi=s.stipendi;
+      if(s.spese)    spese   =s.spese;
+      if(s.extra)    extra   =s.extra;
+      if(s.targets)  targets =s.targets;
+      saveAll();renderConfig();renderPrezzi();renderDashboard();
+      alert('Importazione completata con successo.');
+    }catch{alert('File JSON non valido.')}
+  };
+  r.readAsText(f);
+}
+
+// ===================== DOWNLOAD HELPER =====================
+function dl(content,filename,mime){
+  const blob=new Blob([content],{type:mime});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');a.href=url;a.download=filename;a.click();URL.revokeObjectURL(url);
+}
+
+// ===================== CHARTS (Chart.js) =====================
+function destroyChart(id){if(_charts[id]){_charts[id].destroy();delete _charts[id];}}
+
+function drawLineChart(id,labels,datasets){
+  destroyChart(id);
+  const canvas=document.getElementById(id);if(!canvas)return;
+  const ctx=canvas.getContext('2d');
+  // Gradiente area sotto la seconda linea (valore mercato)
+  const grad=ctx.createLinearGradient(0,0,0,canvas.parentElement.clientHeight||300);
+  grad.addColorStop(0,'rgba(26,86,219,0.18)');
+  grad.addColorStop(1,'rgba(26,86,219,0)');
+  _charts[id]=new Chart(ctx,{
+    type:'line',
+    data:{
+      labels,
+      datasets:datasets.map((ds,i)=>({
+        label:ds.label,
+        data:ds.data,
+        borderColor:ds.color,
+        backgroundColor:i===1?grad:'transparent',
+        borderWidth:i===1?2.5:2,
+        pointRadius:i===1?3:2,
+        pointHoverRadius:6,
+        pointBackgroundColor:ds.color,
+        fill:i===1,
+        tension:0.35
+      }))
+    },
+    options:{
+      responsive:true,
+      maintainAspectRatio:false,
+      interaction:{mode:'index',intersect:false},
+      plugins:{
+        legend:{
+          position:'top',
+          labels:{font:{size:12,family:'Segoe UI'},usePointStyle:true,pointStyleWidth:16,padding:16}
+        },
+        tooltip:{
+          backgroundColor:'rgba(30,58,95,0.92)',
+          titleFont:{size:12},bodyFont:{size:12},padding:10,
+          callbacks:{label:c=>' '+c.dataset.label+': €'+c.parsed.y.toFixed(2)}
+        }
+      },
+      scales:{
+        x:{
+          grid:{color:'#f3f4f6'},
+          ticks:{font:{size:10,family:'Segoe UI'},color:'#9ca3af',maxTicksLimit:8}
+        },
+        y:{
+          grid:{color:'#f3f4f6'},
+          ticks:{
+            font:{size:10,family:'Segoe UI'},color:'#9ca3af',
+            callback:v=>'€'+Math.round(v).toLocaleString('it-IT')
+          }
+        }
+      }
+    }
+  });
+}
+
+function drawDonut(id,labels,values,colors,legendId,tot){
+  destroyChart(id);
+  const canvas=document.getElementById(id);if(!canvas)return;
+  const ctx=canvas.getContext('2d');
+  _charts[id]=new Chart(ctx,{
+    type:'doughnut',
+    data:{
+      labels,
+      datasets:[{
+        data:values,
+        backgroundColor:colors.slice(0,labels.length),
+        borderColor:'white',
+        borderWidth:3,
+        hoverOffset:8
+      }]
+    },
+    options:{
+      responsive:true,
+      maintainAspectRatio:false,
+      cutout:'60%',
+      plugins:{
+        legend:{display:false},
+        tooltip:{
+          backgroundColor:'rgba(30,58,95,0.92)',
+          callbacks:{
+            label:c=>' '+c.label+': €'+c.parsed.toFixed(2)+' ('+fp(c.parsed/tot)+')'
+          }
+        }
+      }
+    },
+    plugins:[{
+      id:'centerText',
+      afterDraw(chart){
+        const{ctx,chartArea:{width,height,left,top}}=chart;
+        ctx.save();
+        ctx.font='bold 13px Segoe UI';
+        ctx.fillStyle='#1f2937';
+        ctx.textAlign='center';
+        ctx.textBaseline='middle';
+        ctx.fillText('€'+Math.round(tot).toLocaleString('it-IT'),left+width/2,top+height/2);
+        ctx.restore();
+      }
+    }]
+  });
+  if(legendId){
+    const el=document.getElementById(legendId);if(!el)return;
+    el.innerHTML=labels.map((l,i)=>`<div class="legend-item">
+      <div class="ldot" style="background:${colors[i%colors.length]}"></div>
+      <div><strong>${l}</strong> — ${fp(values[i]/tot)} (€${f2(values[i])})</div>
+    </div>`).join('');
+  }
+}
+
+function drawBarChart(id,labels,values,colors,yLabel){
+  destroyChart(id);
+  const canvas=document.getElementById(id);if(!canvas)return;
+  const ctx=canvas.getContext('2d');
+  _charts[id]=new Chart(ctx,{
+    type:'bar',
+    data:{
+      labels,
+      datasets:[{
+        label:yLabel||'%',
+        data:values,
+        backgroundColor:colors,
+        borderColor:colors.map(c=>c),
+        borderWidth:0,
+        borderRadius:5,
+        borderSkipped:false
+      }]
+    },
+    options:{
+      responsive:true,
+      maintainAspectRatio:false,
+      plugins:{
+        legend:{display:false},
+        tooltip:{
+          backgroundColor:'rgba(30,58,95,0.92)',
+          callbacks:{label:c=>' '+c.parsed.y.toFixed(2)+'%'}
+        }
+      },
+      scales:{
+        x:{grid:{display:false},ticks:{font:{size:11,family:'Segoe UI'},color:'#374151'}},
+        y:{
+          grid:{color:'#f3f4f6'},
+          ticks:{font:{size:10,family:'Segoe UI'},color:'#9ca3af',callback:v=>v.toFixed(1)+'%'},
+          title:{display:true,text:yLabel||'%',color:'#9ca3af',font:{size:10}}
+        }
+      }
+    }
+  });
+}
+
+function drawGroupedBar(id,labels,datasets){
+  destroyChart(id);
+  const canvas=document.getElementById(id);if(!canvas)return;
+  const ctx=canvas.getContext('2d');
+  _charts[id]=new Chart(ctx,{
+    type:'bar',
+    data:{
+      labels,
+      datasets:datasets.map(ds=>({
+        label:ds.label,
+        data:ds.data,
+        backgroundColor:ds.color+'cc',
+        borderColor:ds.color,
+        borderWidth:1.5,
+        borderRadius:4,
+        borderSkipped:false
+      }))
+    },
+    options:{
+      responsive:true,
+      maintainAspectRatio:false,
+      plugins:{
+        legend:{
+          position:'top',
+          labels:{font:{size:11,family:'Segoe UI'},usePointStyle:true,padding:14}
+        },
+        tooltip:{
+          backgroundColor:'rgba(30,58,95,0.92)',
+          callbacks:{label:c=>' '+c.dataset.label+': '+c.parsed.y.toFixed(1)+'%'}
+        }
+      },
+      scales:{
+        x:{grid:{display:false},ticks:{font:{size:11,family:'Segoe UI'},color:'#374151'}},
+        y:{
+          grid:{color:'#f3f4f6'},
+          ticks:{font:{size:10,family:'Segoe UI'},color:'#9ca3af',callback:v=>v.toFixed(1)+'%'}
+        }
+      }
+    }
+  });
+}
+
+// ===================== INIT =====================
+document.addEventListener('DOMContentLoaded',()=>{
+  document.getElementById('hdr-date').textContent='Oggi: '+new Date().toLocaleDateString('it-IT',{weekday:'short',day:'2-digit',month:'short',year:'numeric'});
+  // Pre-popola data registro in GG/MM/AAAA
+  const oggi=new Date();
+  const gg=String(oggi.getDate()).padStart(2,'0');
+  const mm=String(oggi.getMonth()+1).padStart(2,'0');
+  const aaaa=oggi.getFullYear();
+  document.getElementById('r-data').value=`${gg}/${mm}/${aaaa}`;
+  renderConfig();
+  renderPrezzi();
+  renderDashboard();
+});
+</script>
+</body>
+</html>
