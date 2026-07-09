@@ -547,53 +547,10 @@ th.sort-asc,th.sort-desc{color:var(--blue)}
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.6/dist/chart.umd.min.js"></script>
 <script>
 // ===================== DATI DEFAULT =====================
-const DEFAULT_ETF = [
-  {ticker:'EIMI',  isin:'IE00BKM4GZ66', nome:'iShares Core MSCI EM IMI',       tipo:'Azionario',           classe:'Emerging Markets',    aliquota:0.26,  pac:'1 quota', giorno:23},
-  {ticker:'SMEA',  isin:'IE00B4K48X80', nome:'iShares Core MSCI Europe',        tipo:'Azionario',           classe:'Europa',               aliquota:0.26,  pac:'1 quota', giorno:23},
-  {ticker:'VWCE',  isin:'IE00BK5BQT80', nome:'Vanguard FTSE All-World Acc',     tipo:'Azionario',           classe:'Global',               aliquota:0.26,  pac:'1 quota', giorno:23},
-  {ticker:'IBCI',  isin:'IE00B0M62X26', nome:'iShares EUR Infl Lnkd Govt',      tipo:'Obblig. Governativo', classe:'Titoli di Stato EUR',  aliquota:0.125, pac:'50',       giorno:23},
-  {ticker:'VGEA',  isin:'IE00BH04GL39', nome:'Vanguard EUR Govt Bond',          tipo:'Obblig. Governativo', classe:'Titoli di Stato EUR',  aliquota:0.125, pac:'70',       giorno:23},
-  {ticker:'SGLN',  isin:'IE00B4ND3602', nome:'iShares Physical Gold ETC',       tipo:'Commodity',           classe:'Oro',                  aliquota:0.26,  pac:'30',       giorno:23},
-  {ticker:'CSBGE3',isin:'IE00B3VTMJ91', nome:'iShares Euro Govt Bond 1-3yr',    tipo:'Obblig. Governativo', classe:'Titoli di Stato EUR',  aliquota:0.125, pac:'75',       giorno:23},
-  {ticker:'XDEV',  isin:'IE00BL25JM42', nome:'Xtrackers MSCI World Value 1C',   tipo:'Azionario',           classe:'Global Value',         aliquota:0.26,  pac:'1 quota', giorno:23},
-];
-const DEFAULT_ACQUISTI = [
-  {data:'2026-02-23',ticker:'VWCE', isin:'IE00BK5BQT80',tipo:'PAC', quote:1,       prezzo:148,    importo:148,       comm:0, note:''},
-  {data:'2026-02-23',ticker:'SMEA', isin:'IE00B4K48X80',tipo:'PAC', quote:1,       prezzo:99.76,  importo:99.76,     comm:0, note:''},
-  {data:'2026-03-23',ticker:'VWCE', isin:'IE00BK5BQT80',tipo:'PAC', quote:1,       prezzo:143.32, importo:143.32,    comm:0, note:''},
-  {data:'2026-03-23',ticker:'EIMI', isin:'IE00BKM4GZ66',tipo:'PAC', quote:1,       prezzo:40.26,  importo:40.26,     comm:0, note:''},
-  {data:'2026-03-23',ticker:'SMEA', isin:'IE00B4K48X80',tipo:'PAC', quote:1,       prezzo:91.92,  importo:91.92,     comm:0, note:''},
-  {data:'2026-04-01',ticker:'VWCE', isin:'IE00BK5BQT80',tipo:'PAC', quote:1,       prezzo:144.88, importo:144.88,    comm:0, note:''},
-  {data:'2026-04-01',ticker:'SMEA', isin:'IE00B4K48X80',tipo:'PAC', quote:1,       prezzo:95.27,  importo:95.27,     comm:0, note:''},
-  {data:'2026-04-01',ticker:'EIMI', isin:'IE00BKM4GZ66',tipo:'PAC', quote:1,       prezzo:40.64,  importo:40.64,     comm:0, note:''},
-  {data:'2026-04-23',ticker:'VWCE', isin:'IE00BK5BQT80',tipo:'PAC', quote:1,       prezzo:153.8,  importo:153.8,     comm:0, note:''},
-  {data:'2026-04-23',ticker:'SMEA', isin:'IE00B4K48X80',tipo:'PAC', quote:1,       prezzo:98.13,  importo:98.13,     comm:0, note:''},
-  {data:'2026-04-23',ticker:'EIMI', isin:'IE00BKM4GZ66',tipo:'PAC', quote:1,       prezzo:44.06,  importo:44.06,     comm:0, note:''},
-  {data:'2026-05-25',ticker:'SMEA', isin:'IE00B4K48X80',tipo:'PAC', quote:1,       prezzo:102.64, importo:102.64,    comm:0, note:''},
-  {data:'2026-05-25',ticker:'VWCE', isin:'IE00BK5BQT80',tipo:'PAC', quote:1,       prezzo:162.77, importo:162.77,    comm:0, note:''},
-  {data:'2026-05-25',ticker:'EIMI', isin:'IE00BKM4GZ66',tipo:'PAC', quote:1,       prezzo:47.4,   importo:47.4,      comm:0, note:''},
-  {data:'2026-06-02',ticker:'IBCI', isin:'IE00B0M62X26',tipo:'PAC', quote:0.209881,prezzo:238.23, importo:50.0,      comm:0, note:'PAC 50€ giu-26'},
-  {data:'2026-06-02',ticker:'VGEA', isin:'IE00BH04GL39',tipo:'PAC', quote:3.109968,prezzo:24.116, importo:75.0,      comm:0, note:'PAC 70€ giu-26'},
-  {data:'2026-06-02',ticker:'SGLN', isin:'IE00B4ND3602',tipo:'PAC', quote:0.331345,prezzo:75.45,  importo:25.0,      comm:0, note:'PAC 30€ giu-26'},
-  {data:'2026-06-02',ticker:'SGLN', isin:'IE00B4ND3602',tipo:'SPOT',quote:0.163419,prezzo:75.45,  importo:12.33,     comm:0, note:''},
-  {data:'2026-07-02',ticker:'IBCI', isin:'IE00B0M62X26',tipo:'PAC', quote:0.210544,prezzo:237.48, importo:50.0,      comm:0, note:''},
-  {data:'2026-07-02',ticker:'VGEA', isin:'IE00BH04GL39',tipo:'PAC', quote:3.1,     prezzo:24.14,  importo:74.834,    comm:0, note:''},
-  {data:'2026-07-02',ticker:'SGLN', isin:'IE00B4ND3602',tipo:'PAC', quote:0.33,    prezzo:70.68,  importo:23.32,     comm:0, note:''},
-  {data:'2026-07-02',ticker:'VWCE', isin:'IE00BK5BQT80',tipo:'PAC', quote:1,       prezzo:168.85, importo:168.85,    comm:0, note:''},
-  {data:'2026-07-02',ticker:'EIMI', isin:'IE00BKM4GZ66',tipo:'PAC', quote:1,       prezzo:48.32,  importo:48.32,     comm:0, note:''},
-  {data:'2026-07-02',ticker:'SMEA', isin:'IE00B4K48X80',tipo:'PAC', quote:1,       prezzo:105.55, importo:105.55,    comm:0, note:''},
-];
-const DEFAULT_PREZZI = {
-  EIMI:{prezzo:48.32,  data:'2026-07-03'},
-  SMEA:{prezzo:105.55, data:'2026-07-03'},
-  VWCE:{prezzo:168.85, data:'2026-07-03'},
-  IBCI:{prezzo:237.14, data:'2026-07-03'},
-  VGEA:{prezzo:24.14,  data:'2026-07-03'},
-  SGLN:{prezzo:70.68,  data:'2026-07-03'},
-  CSBGE3:{prezzo:0,   data:''},
-  XDEV:{prezzo:0,     data:''},
-};
-const DEFAULT_TARGETS = {EIMI:9.64,SMEA:25.12,VWCE:39.74,IBCI:7.98,VGEA:9.98,SGLN:7.55,CSBGE3:0,XDEV:0};
+const DEFAULT_ETF = [];
+const DEFAULT_ACQUISTI = [];
+const DEFAULT_PREZZI = {};
+const DEFAULT_TARGETS = {};
 
 // ===================== STATE =====================
 function ld(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch{return d}}
