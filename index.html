@@ -132,6 +132,32 @@ th.sort-asc,th.sort-desc{color:var(--blue)}
 .guide-section p,.guide-section li{font-size:12px;line-height:1.7;color:var(--gray-700)}
 .guide-section ul,.guide-section ol{padding-left:16px}
 
+
+/* MINI CALENDARIO */
+.cal-wrap{position:relative;display:inline-flex;align-items:center;gap:3px}
+.cal-wrap input{width:110px}
+.cal-btn{background:var(--blue-light);border:1px solid #c7d8f8;border-radius:4px;
+  cursor:pointer;padding:4px 6px;font-size:13px;line-height:1;color:var(--blue);
+  flex-shrink:0;height:28px}
+.cal-btn:hover{background:var(--blue);color:white}
+#mini-cal{display:none;position:absolute;top:32px;left:0;z-index:2000;
+  background:white;border:1px solid var(--gray-300);border-radius:8px;
+  box-shadow:0 6px 24px rgba(0,0,0,.18);padding:10px;min-width:220px;user-select:none}
+#mini-cal.open{display:block}
+.mcal-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.mcal-nav button{background:none;border:none;cursor:pointer;font-size:16px;
+  color:var(--blue);padding:0 4px;line-height:1}
+.mcal-nav button:hover{color:var(--blue-dark)}
+.mcal-title{font-size:12px;font-weight:700;color:var(--gray-800)}
+.mcal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px}
+.mcal-dh{font-size:9px;font-weight:700;color:var(--gray-400);text-align:center;padding:2px 0}
+.mcal-d{font-size:11px;text-align:center;padding:3px 2px;border-radius:4px;cursor:pointer;color:var(--gray-700)}
+.mcal-d:hover{background:var(--blue-light);color:var(--blue)}
+.mcal-d.today{background:var(--yellow);font-weight:700}
+.mcal-d.selected{background:var(--blue);color:white;font-weight:700}
+.mcal-d.other-month{color:var(--gray-300)}
+.mcal-d.empty{cursor:default}
+
 /* TOOLTIP */
 .tt{position:relative;cursor:help}
 .tt:hover::after{content:attr(data-tip);position:absolute;bottom:120%;left:50%;transform:translateX(-50%);
@@ -259,7 +285,12 @@ th.sort-asc,th.sort-desc{color:var(--blue)}
     <div class="card-body">
       <div class="card-note">Seleziona il Ticker → ISIN e dati si compilano automaticamente. <strong>Importo Totale</strong> = Quote × Prezzo (calcolato auto).</div>
       <div class="add-form">
-        <div class="fg"><label>Data*</label><input type="text" id="r-data" placeholder="GG/MM/AAAA" maxlength="10" style="width:110px"></div>
+        <div class="fg"><label>Data*</label>
+          <div class="cal-wrap" id="cal-wrap-r">
+            <input type="text" id="r-data" placeholder="GG/MM/AAAA" maxlength="10" autocomplete="off">
+            <button type="button" class="cal-btn" onclick="toggleCal('r-data','cal-wrap-r')" title="Scegli data">📅</button>
+            <div id="mini-cal" data-target="r-data"></div>
+          </div></div>
         <div class="fg"><label>Ticker*</label><select id="r-ticker" onchange="autoFillRegistro()"></select></div>
         <div class="fg"><label>Tipo</label><select id="r-tipo"><option>PAC</option><option>SPOT</option></select></div>
         <div class="fg"><label>N. Quote</label><input type="number" id="r-quote" step="0.000001" min="0" placeholder="1" oninput="calcImporto()"></div>
@@ -289,6 +320,8 @@ th.sort-asc,th.sort-desc{color:var(--blue)}
         <table>
           <thead>
             <tr>
+              <th style="background:var(--hbg);color:white;font-size:10px;width:36px;text-align:center">Anno</th>
+              <th style="background:var(--gray-200);color:var(--gray-700);font-size:10px;width:46px;text-align:center">Mese</th>
               <th class="sortable" onclick="sortRegistro('data')"     id="th-reg-data">    Data     <span class="sort-arrow"></span></th>
               <th class="sortable" onclick="sortRegistro('ticker')"   id="th-reg-ticker">  Ticker   <span class="sort-arrow"></span></th>
               <th>ISIN</th>
@@ -935,32 +968,56 @@ function renderRegistro(){
     if(c===col) th.classList.add(dir===1?'sort-asc':'sort-desc');
   });
 
-  // --- Render righe: costruisci HTML in array, assegna UNA VOLTA SOLA ---
+  // --- Render righe con colonne Anno e Mese (rowspan dinamico) ---
   let totInv=0, totComm=0;
   const rows=[];
-  lista.forEach(a=>{
-    const i = a._origIdx;
-    totInv+=a.importo; totComm+=a.comm;
-    rows.push(`<tr>
-      <td>${fd(a.data)}</td>
-      <td><strong>${a.ticker}</strong></td>
-      <td style="font-size:10px;color:var(--gray-400)">${a.isin||'–'}</td>
-      <td><span class="badge ${a.tipo==='PAC'?'badge-blue':'badge-green'}">${a.tipo}</span></td>
-      <td>${f4(a.quote)}</td>
-      <td>${f4(a.prezzo)}</td>
-      <td class="fc"><strong>${f2(a.importo)}</strong></td>
-      <td>${f2(a.comm)}</td>
-      <td style="font-size:11px">${a.note||'–'}</td>
-      <td style="display:flex;gap:4px">
-        <button class="btn-edit-row" onclick="openEditModal(${i})">✏️</button>
-        <button class="btn btn-danger btn-sm" onclick="removeAcq(${i})">✕</button>
-      </td>
-    </tr>`);
+  const MESI_BR=['Gen','Feb','Mar','Apr','Mag','Giu','Lug','Ago','Set','Ott','Nov','Dic'];
+
+  // Calcola gruppi Anno e Mese sull'ordine corrente (post-sort)
+  var gruppiAnno=[]; var gruppiMese=[];
+  lista.forEach(function(a,idx){
+    var anno=a.data?a.data.substring(0,4):'????';
+    var mesek=a.data?a.data.substring(0,7):'????-??';
+    var mm=parseInt((a.data||'').substring(5,7),10)-1;
+    var meseLabel=(mm>=0&&mm<12)?MESI_BR[mm]:"?";
+    // anno
+    if(!gruppiAnno.length||gruppiAnno[gruppiAnno.length-1].key!==anno){
+      gruppiAnno.push({key:anno,label:anno,count:1,firstIdx:idx});
+    } else { gruppiAnno[gruppiAnno.length-1].count++; }
+    // mese
+    if(!gruppiMese.length||gruppiMese[gruppiMese.length-1].key!==mesek){
+      gruppiMese.push({key:mesek,label:meseLabel,count:1,firstIdx:idx});
+    } else { gruppiMese[gruppiMese.length-1].count++; }
   });
-  tbody.innerHTML = rows.join('');
+  var firstAnno={}; gruppiAnno.forEach(function(g){firstAnno[g.firstIdx]=g;});
+  var firstMese={}; gruppiMese.forEach(function(g){firstMese[g.firstIdx]=g;});
+
+  lista.forEach(function(a,idx){
+    var i=a._origIdx;
+    totInv+=a.importo; totComm+=a.comm;
+    var ga=firstAnno[idx];
+    var gm=firstMese[idx];
+    var annoTd=ga?'<td rowspan="'+ga.count+'" style="background:var(--hbg);color:white;font-size:11px;font-weight:800;text-align:center;vertical-align:middle;border-right:2px solid rgba(255,255,255,.15);padding:3px 4px;min-width:34px;writing-mode:horizontal-tb">'+ga.label+'</td>':'';
+    var meseTd=gm?'<td rowspan="'+gm.count+'" style="background:var(--blue-light);color:var(--blue);font-size:10px;font-weight:700;text-align:center;vertical-align:middle;border-right:1px solid var(--gray-200);padding:3px 4px;min-width:40px">'+gm.label+'</td>':'';
+    rows.push('<tr>'+annoTd+meseTd
+      +'<td>'+fd(a.data)+'</td>'
+      +'<td><strong>'+a.ticker+'</strong></td>'
+      +'<td style="font-size:10px;color:var(--gray-400)">'+(a.isin||'–')+'</td>'
+      +'<td><span class="badge '+(a.tipo==='PAC'?'badge-blue':'badge-green')+'">'+a.tipo+'</span></td>'
+      +'<td>'+f4(a.quote)+'</td>'
+      +'<td>'+f4(a.prezzo)+'</td>'
+      +'<td class="fc"><strong>'+f2(a.importo)+'</strong></td>'
+      +'<td>'+f2(a.comm)+'</td>'
+      +'<td style="font-size:11px">'+(a.note||'–')+'</td>'
+      +'<td style="display:flex;gap:4px">'
+        +'<button class="btn-edit-row" onclick="openEditModal('+i+')">✏️</button>'
+        +'<button class="btn btn-danger btn-sm" onclick="removeAcq('+i+')">✕</button>'
+      +'</td></tr>');
+  });
+  tbody.innerHTML=rows.join('');
 
   tfoot.innerHTML=`<tr style="background:var(--gray-100);font-weight:700">
-    <td colspan="6">TOTALE FILTRATI (${lista.length})</td>
+    <td colspan="8">TOTALE FILTRATI (${lista.length})</td>
     <td>${f2(totInv)}</td><td>${f2(totComm)}</td><td colspan="2"></td></tr>`;
 
   const cnt=document.getElementById('reg-count');
@@ -1617,6 +1674,95 @@ document.addEventListener('DOMContentLoaded',()=>{
   renderPrezzi();
   renderDashboard();
 });
+
+// ── MINI CALENDARIO ──────────────────────────
+var _calTarget='', _calYear=0, _calMonth=0;
+function toggleCal(targetId, wrapId){
+  var cal=document.getElementById('mini-cal');
+  if(!cal) return;
+  if(cal.classList.contains('open')){cal.classList.remove('open');return;}
+  _calTarget=targetId;
+  cal.setAttribute('data-target',targetId);
+  // Posiziona relativo al wrap
+  var today=new Date();
+  var inp=document.getElementById(targetId);
+  var parsed=_parseIsoFromDisplay(inp?inp.value:'');
+  if(parsed){var d=new Date(parsed);_calYear=d.getFullYear();_calMonth=d.getMonth();}
+  else{_calYear=today.getFullYear();_calMonth=today.getMonth();}
+  renderMiniCal();
+  cal.classList.add('open');
+  // Chiudi click fuori
+  setTimeout(function(){
+    document.addEventListener('click',_calOutside,{once:true});
+  },10);
+}
+function _calOutside(e){
+  var cal=document.getElementById('mini-cal');
+  var btn=document.querySelector('.cal-btn');
+  if(cal&&!cal.contains(e.target)&&(!btn||!btn.contains(e.target))){
+    cal.classList.remove('open');
+  }
+}
+function renderMiniCal(){
+  var cal=document.getElementById('mini-cal');
+  if(!cal) return;
+  var today=new Date();
+  var MESI_IT=['Gennaio','Febbraio','Marzo','Aprile','Maggio','Giugno',
+               'Luglio','Agosto','Settembre','Ottobre','Novembre','Dicembre'];
+  var firstDay=new Date(_calYear,_calMonth,1).getDay();
+  firstDay=(firstDay+6)%7; // lun=0
+  var daysInMonth=new Date(_calYear,_calMonth+1,0).getDate();
+  var daysInPrev=new Date(_calYear,_calMonth,0).getDate();
+
+  var html='<div class="mcal-nav">'
+    +'<button onclick="calNav(-1)">&#8249;</button>'
+    +'<span class="mcal-title">'+MESI_IT[_calMonth]+' '+_calYear+'</span>'
+    +'<button onclick="calNav(1)">&#8250;</button>'
+    +'</div>'
+    +'<div class="mcal-grid">';
+  ['L','M','M','G','V','S','D'].forEach(function(d){
+    html+='<div class="mcal-dh">'+d+'</div>';
+  });
+  // Giorni mese precedente
+  for(var p=firstDay-1;p>=0;p--){
+    html+='<div class="mcal-d other-month">'+(daysInPrev-p)+'</div>';
+  }
+  // Giorni correnti
+  var selIso='';
+  var inp=document.getElementById(_calTarget);
+  if(inp) selIso=_parseIsoFromDisplay(inp.value)||'';
+  for(var d2=1;d2<=daysInMonth;d2++){
+    var iso=_calYear+'-'+String(_calMonth+1).padStart(2,'0')+'-'+String(d2).padStart(2,'0');
+    var cls='mcal-d';
+    if(iso===selIso) cls+=' selected';
+    else if(d2===today.getDate()&&_calMonth===today.getMonth()&&_calYear===today.getFullYear()) cls+=' today';
+    html+='<div class="'+cls+'" onclick="calPick('+d2+')">'+d2+'</div>';
+  }
+  // Giorni mese successivo
+  var rem=(7-((firstDay+daysInMonth)%7))%7;
+  for(var n=1;n<=rem;n++){
+    html+='<div class="mcal-d other-month">'+n+'</div>';
+  }
+  html+='</div>';
+  cal.innerHTML=html;
+}
+function calNav(dir){
+  _calMonth+=dir;
+  if(_calMonth>11){_calMonth=0;_calYear++;}
+  if(_calMonth<0){_calMonth=11;_calYear--;}
+  renderMiniCal();
+}
+function calPick(day){
+  var iso=_calYear+'-'+String(_calMonth+1).padStart(2,'0')+'-'+String(day).padStart(2,'0');
+  var gg=String(day).padStart(2,'0');
+  var mm=String(_calMonth+1).padStart(2,'0');
+  var inp=document.getElementById(_calTarget);
+  if(inp) inp.value=gg+'/'+mm+'/'+_calYear;
+  var cal=document.getElementById('mini-cal');
+  if(cal) cal.classList.remove('open');
+}
+// ─────────────────────────────────────────────
+
 </script>
 </body>
 </html>
