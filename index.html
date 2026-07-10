@@ -816,7 +816,21 @@ function renderDashMacro(data){
   leg.innerHTML = labels.map((l,i)=>{
     const delta = attuale[i] - target[i];
     const dStr  = (delta>=0?'+':'')+delta.toFixed(1)+'%';
-    const dCol  = Math.abs(delta)<2?'var(--green)':Math.abs(delta)<5?'var(--gold)':'var(--red)';
+    const absd = Math.abs(delta);
+    let dCol;
+    if(delta >= 0){
+      // sovrappeso: blu – da celeste a blu oltremare
+      if(absd < 2)       dCol = '#7ec8e3';
+      else if(absd < 5)  dCol = '#1a8fe0';
+      else if(absd < 10) dCol = '#1a56db';
+      else               dCol = '#0d2d7a';
+    } else {
+      // sottopeso: rosso – da rosa chiaro a rosso sangue
+      if(absd < 2)       dCol = '#f8b4b4';
+      else if(absd < 5)  dCol = '#e05252';
+      else if(absd < 10) dCol = '#c81e1e';
+      else               dCol = '#7b0000';
+    }
     return `<div class="legend-item"><div class="ldot" style="background:${colors[i]}"></div>`+
            `<div style="font-size:11px"><strong>${l}</strong>: ${attuale[i]}% `+
            `<span style="color:var(--gray-400)">| target ${target[i]}%</span> `+
