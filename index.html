@@ -195,17 +195,16 @@ th.sort-asc,th.sort-desc{color:var(--blue)}
     <div class="chart-box" style="flex:1;min-width:260px">
       <div class="chart-title" style="display:flex;align-items:center;justify-content:space-between">
         <span>Macro Allocazione</span>
-        <button class="btn-edit-row" onclick="toggleMacroEdit()" id="macro-edit-btn" style="font-size:10px">✏️ Target</button>
+        <button class="btn-edit-row" onclick="toggleMacroEdit()" id="macro-edit-btn" style="font-size:10px">&#9999;&#65039; Target</button>
       </div>
-      <!-- Pannello target editabili (nascosto di default) -->
       <div id="macro-edit-panel" style="display:none;background:var(--gray-50);border:1px solid var(--gray-200);border-radius:6px;padding:10px;margin-bottom:10px;font-size:11px">
         <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;align-items:end">
-          <div class="fg"><label style="font-size:10px;color:var(--gray-600)">⬜ Azionario %</label><input type="number" id="mt-az" min="0" max="100" step="1" style="width:100%"></div>
-          <div class="fg"><label style="font-size:10px;color:var(--gray-600)">🔵 Obbligaz. %</label><input type="number" id="mt-ob" min="0" max="100" step="1" style="width:100%"></div>
-          <div class="fg"><label style="font-size:10px;color:var(--gray-600)">🟡 Oro %</label><input type="number" id="mt-or" min="0" max="100" step="1" style="width:100%"></div>
+          <div class="fg"><label style="font-size:10px;color:var(--gray-600)">Azionario %</label><input type="number" id="mt-az" min="0" max="100" step="1" style="width:100%"></div>
+          <div class="fg"><label style="font-size:10px;color:var(--gray-600)">Obbligaz. %</label><input type="number" id="mt-ob" min="0" max="100" step="1" style="width:100%"></div>
+          <div class="fg"><label style="font-size:10px;color:var(--gray-600)">Oro %</label><input type="number" id="mt-or" min="0" max="100" step="1" style="width:100%"></div>
         </div>
         <div style="margin-top:8px;display:flex;gap:6px;align-items:center">
-          <button class="btn btn-primary btn-sm" onclick="saveMacroTargets()">💾 Salva</button>
+          <button class="btn btn-primary btn-sm" onclick="saveMacroTargets()">&#128190; Salva</button>
           <span id="macro-edit-msg" style="font-size:10px;color:var(--green)"></span>
         </div>
       </div>
@@ -258,14 +257,14 @@ th.sort-asc,th.sort-desc{color:var(--blue)}
       </div>
     </div>
     <div class="card-body">
-      <div class="card-note">Seleziona il Ticker → ISIN e dati si compilano automaticamente. <strong>Calcolo bidirezionale:</strong> Quote × Prezzo → Importo &nbsp;|&nbsp; Prezzo + Importo → Quote.</div>
+      <div class="card-note">Seleziona il Ticker → ISIN e dati si compilano automaticamente. <strong>Importo Totale</strong> = Quote × Prezzo (calcolato auto).</div>
       <div class="add-form">
         <div class="fg"><label>Data*</label><input type="text" id="r-data" placeholder="GG/MM/AAAA" maxlength="10" style="width:110px"></div>
         <div class="fg"><label>Ticker*</label><select id="r-ticker" onchange="autoFillRegistro()"></select></div>
         <div class="fg"><label>Tipo</label><select id="r-tipo"><option>PAC</option><option>SPOT</option></select></div>
         <div class="fg"><label>N. Quote</label><input type="number" id="r-quote" step="0.000001" min="0" placeholder="1" oninput="calcImporto()"></div>
         <div class="fg"><label>Prezzo/Quota (€)</label><input type="number" id="r-prezzo" step="0.01" min="0" oninput="calcImporto()"></div>
-        <div class="fg"><label>Importo Tot. (€)</label><input type="number" id="r-importo" step="0.01" min="0" placeholder="auto" oninput="calcQuote()"></div>
+        <div class="fg"><label>Importo Tot. (€)</label><input type="number" id="r-importo" step="0.01" min="0" placeholder="auto"></div>
         <div class="fg"><label>Commissioni (€)</label><input type="number" id="r-comm" step="0.01" min="0" value="0"></div>
         <div class="fg"><label>Note</label><input type="text" id="r-note" placeholder="opz."></div>
         <div class="fg"><label>&nbsp;</label><button class="btn btn-primary" onclick="addAcquisto()">+ Aggiungi</button></div>
@@ -290,7 +289,6 @@ th.sort-asc,th.sort-desc{color:var(--blue)}
         <table>
           <thead>
             <tr>
-              <th style="background:var(--gray-200);color:var(--gray-700);font-size:10px;width:58px;text-align:center">Mese</th>
               <th class="sortable" onclick="sortRegistro('data')"     id="th-reg-data">    Data     <span class="sort-arrow"></span></th>
               <th class="sortable" onclick="sortRegistro('ticker')"   id="th-reg-ticker">  Ticker   <span class="sort-arrow"></span></th>
               <th>ISIN</th>
@@ -549,52 +547,20 @@ th.sort-asc,th.sort-desc{color:var(--blue)}
 <script>
 // ===================== DATI DEFAULT =====================
 const DEFAULT_ETF = [
-  {ticker:'EIMI',  isin:'IE00BKM4GZ66', nome:'iShares Core MSCI EM IMI',       tipo:'Azionario',           classe:'Emerging Markets',    aliquota:0.26,  pac:'1 quota', giorno:23},
-  {ticker:'SMEA',  isin:'IE00B4K48X80', nome:'iShares Core MSCI Europe',        tipo:'Azionario',           classe:'Europa',               aliquota:0.26,  pac:'1 quota', giorno:23},
-  {ticker:'VWCE',  isin:'IE00BK5BQT80', nome:'Vanguard FTSE All-World Acc',     tipo:'Azionario',           classe:'Global',               aliquota:0.26,  pac:'1 quota', giorno:23},
-  {ticker:'IBCI',  isin:'IE00B0M62X26', nome:'iShares EUR Infl Lnkd Govt',      tipo:'Obblig. Governativo', classe:'Titoli di Stato EUR',  aliquota:0.125, pac:'50',       giorno:23},
-  {ticker:'VGEA',  isin:'IE00BH04GL39', nome:'Vanguard EUR Govt Bond',          tipo:'Obblig. Governativo', classe:'Titoli di Stato EUR',  aliquota:0.125, pac:'70',       giorno:23},
-  {ticker:'SGLN',  isin:'IE00B4ND3602', nome:'iShares Physical Gold ETC',       tipo:'Commodity',           classe:'Oro',                  aliquota:0.26,  pac:'30',       giorno:23},
-  {ticker:'CSBGE3',isin:'IE00B3VTMJ91', nome:'iShares Euro Govt Bond 1-3yr',    tipo:'Obblig. Governativo', classe:'Titoli di Stato EUR',  aliquota:0.125, pac:'75',       giorno:23},
-  {ticker:'XDEV',  isin:'IE00BL25JM42', nome:'Xtrackers MSCI World Value 1C',   tipo:'Azionario',           classe:'Global Value',         aliquota:0.26,  pac:'1 quota', giorno:23},
+  {ticker:'EIMI',  isin:'IE00BKM4GZ66', nome:'iShares Core MSCI EM IMI',       tipo:'Azionario',           classe:'Emerging Markets',    aliquota:0.26,  pac:'', giorno:1},
+  {ticker:'SMEA',  isin:'IE00B4K48X80', nome:'iShares Core MSCI Europe',        tipo:'Azionario',           classe:'Europa',               aliquota:0.26,  pac:'', giorno:1},
+  {ticker:'VWCE',  isin:'IE00BK5BQT80', nome:'Vanguard FTSE All-World Acc',     tipo:'Azionario',           classe:'Global',               aliquota:0.26,  pac:'', giorno:1},
+  {ticker:'IBCI',  isin:'IE00B0M62X26', nome:'iShares EUR Infl Lnkd Govt',      tipo:'Obblig. Governativo', classe:'Titoli di Stato EUR',  aliquota:0.125, pac:'',       giorno:1},
+  {ticker:'VGEA',  isin:'IE00BH04GL39', nome:'Vanguard EUR Govt Bond',          tipo:'Obblig. Governativo', classe:'Titoli di Stato EUR',  aliquota:0.125, pac:'',       giorno:1},
+  {ticker:'SGLN',  isin:'IE00B4ND3602', nome:'iShares Physical Gold ETC',       tipo:'Commodity',           classe:'Oro',                  aliquota:0.26,  pac:'',       giorno:1},
+  {ticker:'CSBGE3',isin:'IE00B3VTMJ91', nome:'iShares Euro Govt Bond 1-3yr',    tipo:'Obblig. Governativo', classe:'Titoli di Stato EUR',  aliquota:0.125, pac:'',       giorno:1},
+  {ticker:'XDEV',  isin:'IE00BL25JM42', nome:'Xtrackers MSCI World Value 1C',   tipo:'Azionario',           classe:'Global Value',         aliquota:0.26,  pac:'', giorno:1},
 ];
 const DEFAULT_ACQUISTI = [
-  {data:'2026-02-23',ticker:'VWCE', isin:'IE00BK5BQT80',tipo:'PAC', quote:1,       prezzo:148,    importo:148,       comm:0, note:''},
-  {data:'2026-02-23',ticker:'SMEA', isin:'IE00B4K48X80',tipo:'PAC', quote:1,       prezzo:99.76,  importo:99.76,     comm:0, note:''},
-  {data:'2026-03-23',ticker:'VWCE', isin:'IE00BK5BQT80',tipo:'PAC', quote:1,       prezzo:143.32, importo:143.32,    comm:0, note:''},
-  {data:'2026-03-23',ticker:'EIMI', isin:'IE00BKM4GZ66',tipo:'PAC', quote:1,       prezzo:40.26,  importo:40.26,     comm:0, note:''},
-  {data:'2026-03-23',ticker:'SMEA', isin:'IE00B4K48X80',tipo:'PAC', quote:1,       prezzo:91.92,  importo:91.92,     comm:0, note:''},
-  {data:'2026-04-01',ticker:'VWCE', isin:'IE00BK5BQT80',tipo:'PAC', quote:1,       prezzo:144.88, importo:144.88,    comm:0, note:''},
-  {data:'2026-04-01',ticker:'SMEA', isin:'IE00B4K48X80',tipo:'PAC', quote:1,       prezzo:95.27,  importo:95.27,     comm:0, note:''},
-  {data:'2026-04-01',ticker:'EIMI', isin:'IE00BKM4GZ66',tipo:'PAC', quote:1,       prezzo:40.64,  importo:40.64,     comm:0, note:''},
-  {data:'2026-04-23',ticker:'VWCE', isin:'IE00BK5BQT80',tipo:'PAC', quote:1,       prezzo:153.8,  importo:153.8,     comm:0, note:''},
-  {data:'2026-04-23',ticker:'SMEA', isin:'IE00B4K48X80',tipo:'PAC', quote:1,       prezzo:98.13,  importo:98.13,     comm:0, note:''},
-  {data:'2026-04-23',ticker:'EIMI', isin:'IE00BKM4GZ66',tipo:'PAC', quote:1,       prezzo:44.06,  importo:44.06,     comm:0, note:''},
-  {data:'2026-05-25',ticker:'SMEA', isin:'IE00B4K48X80',tipo:'PAC', quote:1,       prezzo:102.64, importo:102.64,    comm:0, note:''},
-  {data:'2026-05-25',ticker:'VWCE', isin:'IE00BK5BQT80',tipo:'PAC', quote:1,       prezzo:162.77, importo:162.77,    comm:0, note:''},
-  {data:'2026-05-25',ticker:'EIMI', isin:'IE00BKM4GZ66',tipo:'PAC', quote:1,       prezzo:47.4,   importo:47.4,      comm:0, note:''},
-  {data:'2026-06-02',ticker:'IBCI', isin:'IE00B0M62X26',tipo:'PAC', quote:0.209881,prezzo:238.23, importo:50.0,      comm:0, note:'PAC 50€ giu-26'},
-  {data:'2026-06-02',ticker:'VGEA', isin:'IE00BH04GL39',tipo:'PAC', quote:3.109968,prezzo:24.116, importo:75.0,      comm:0, note:'PAC 70€ giu-26'},
-  {data:'2026-06-02',ticker:'SGLN', isin:'IE00B4ND3602',tipo:'PAC', quote:0.331345,prezzo:75.45,  importo:25.0,      comm:0, note:'PAC 30€ giu-26'},
-  {data:'2026-06-02',ticker:'SGLN', isin:'IE00B4ND3602',tipo:'SPOT',quote:0.163419,prezzo:75.45,  importo:12.33,     comm:0, note:''},
-  {data:'2026-07-02',ticker:'IBCI', isin:'IE00B0M62X26',tipo:'PAC', quote:0.210544,prezzo:237.48, importo:50.0,      comm:0, note:''},
-  {data:'2026-07-02',ticker:'VGEA', isin:'IE00BH04GL39',tipo:'PAC', quote:3.1,     prezzo:24.14,  importo:74.834,    comm:0, note:''},
-  {data:'2026-07-02',ticker:'SGLN', isin:'IE00B4ND3602',tipo:'PAC', quote:0.33,    prezzo:70.68,  importo:23.32,     comm:0, note:''},
-  {data:'2026-07-02',ticker:'VWCE', isin:'IE00BK5BQT80',tipo:'PAC', quote:1,       prezzo:168.85, importo:168.85,    comm:0, note:''},
-  {data:'2026-07-02',ticker:'EIMI', isin:'IE00BKM4GZ66',tipo:'PAC', quote:1,       prezzo:48.32,  importo:48.32,     comm:0, note:''},
-  {data:'2026-07-02',ticker:'SMEA', isin:'IE00B4K48X80',tipo:'PAC', quote:1,       prezzo:105.55, importo:105.55,    comm:0, note:''},
 ];
 const DEFAULT_PREZZI = {
-  EIMI:{prezzo:48.32,  data:'2026-07-03'},
-  SMEA:{prezzo:105.55, data:'2026-07-03'},
-  VWCE:{prezzo:168.85, data:'2026-07-03'},
-  IBCI:{prezzo:237.14, data:'2026-07-03'},
-  VGEA:{prezzo:24.14,  data:'2026-07-03'},
-  SGLN:{prezzo:70.68,  data:'2026-07-03'},
-  CSBGE3:{prezzo:0,   data:''},
-  XDEV:{prezzo:0,     data:''},
 };
-const DEFAULT_TARGETS = {EIMI:9.64,SMEA:25.12,VWCE:39.74,IBCI:7.98,VGEA:9.98,SGLN:7.55,CSBGE3:0,XDEV:0};
+const DEFAULT_TARGETS = {};
 
 // ===================== STATE =====================
 function ld(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch{return d}}
@@ -741,7 +707,7 @@ function renderDashBar(data){
   drawBarChart('dash-bar-chart',labels,values,colors,'P&L %');
 }
 
-// Macro target: {az, ob, or} in %
+// Macro target persistenti
 const DEFAULT_MACRO_TARGETS = {az:70, ob:20, or:10};
 let macroTargets = ld('pac_macro_tgt', DEFAULT_MACRO_TARGETS);
 
@@ -758,44 +724,43 @@ function toggleMacroEdit(){
 }
 
 function saveMacroTargets(){
-  const az = +document.getElementById('mt-az').value || 0;
-  const ob = +document.getElementById('mt-ob').value || 0;
-  const or_= +document.getElementById('mt-or').value || 0;
+  const az  = +document.getElementById('mt-az').value || 0;
+  const ob  = +document.getElementById('mt-ob').value || 0;
+  const or_ = +document.getElementById('mt-or').value || 0;
   const tot = az + ob + or_;
+  const msg = document.getElementById('macro-edit-msg');
   if(tot !== 100){
-    document.getElementById('macro-edit-msg').textContent = '⚠ La somma deve essere 100% (ora: '+tot+'%)';
-    document.getElementById('macro-edit-msg').style.color = 'var(--red)';
+    msg.textContent = '\u26a0 Somma deve essere 100% (ora: '+tot+'%)';
+    msg.style.color = 'var(--red)';
     return;
   }
-  macroTargets = {az, ob, or: or_};
+  macroTargets = {az, ob, or:or_};
   sv('pac_macro_tgt', macroTargets);
-  document.getElementById('macro-edit-msg').textContent = '✓ Salvato';
-  document.getElementById('macro-edit-msg').style.color = 'var(--green)';
-  setTimeout(()=>{ document.getElementById('macro-edit-panel').style.display='none'; }, 800);
+  msg.textContent = '\u2713 Salvato';
+  msg.style.color = 'var(--green)';
+  setTimeout(()=>{ document.getElementById('macro-edit-panel').style.display='none'; }, 900);
   renderDashMacro(calcPortafoglio());
 }
 
 function renderDashMacro(data){
-  // Raggruppa per macro-categoria: Azionario, Obbligazionario, Oro/Commodity
   const macro = {Azionario:0, Obbligazionario:0, Oro:0};
   Object.values(data).forEach(d=>{
     if(d.vm <= 0) return;
-    const t = d.tipo || '';
+    const t = (d.tipo||'');
     if(t === 'Azionario')           macro.Azionario       += d.vm;
     else if(t.startsWith('Obblig')) macro.Obbligazionario += d.vm;
     else if(t === 'Commodity')      macro.Oro             += d.vm;
-    else                            macro.Azionario       += d.vm; // fallback
+    else                            macro.Azionario       += d.vm;
   });
-
   const tot = macro.Azionario + macro.Obbligazionario + macro.Oro;
   const pctAz = tot > 0 ? (macro.Azionario       / tot * 100) : 0;
   const pctOb = tot > 0 ? (macro.Obbligazionario  / tot * 100) : 0;
   const pctOr = tot > 0 ? (macro.Oro              / tot * 100) : 0;
 
-  const labels  = ['Azionario', 'Obbligazionario', 'Oro'];
+  const labels  = ['Azionario','Obbligazionario','Oro'];
   const attuale = [+pctAz.toFixed(1), +pctOb.toFixed(1), +pctOr.toFixed(1)];
   const target  = [macroTargets.az, macroTargets.ob, macroTargets.or];
-  const colors  = ['#1a56db', '#057a55', '#e3a008'];
+  const colors  = ['#1a56db','#057a55','#e3a008'];
 
   destroyChart('dash-macro-chart');
   const canvas = document.getElementById('dash-macro-chart');
@@ -806,86 +771,39 @@ function renderDashMacro(data){
     data: {
       labels,
       datasets: [
-        {
-          label: 'Attuale %',
-          data: attuale,
-          backgroundColor: colors.map(c=>c+'cc'),
-          borderColor: colors,
-          borderWidth: 2,
-          borderRadius: 5,
-          borderSkipped: false
-        },
-        {
-          label: 'Target %',
-          data: target,
-          backgroundColor: 'transparent',
-          borderColor: colors,
-          borderWidth: 2.5,
-          borderDash: [5,3],
-          type: 'bar',
-          borderRadius: 5,
-          borderSkipped: false,
-          // Rendiamo visivamente il target come bordo tratteggiato
-          backgroundColor: colors.map(c=>c+'22'),
-        }
+        { label:'Attuale %',  data:attuale, backgroundColor:colors.map(c=>c+'bb'), borderColor:colors, borderWidth:2, borderRadius:5, borderSkipped:false },
+        { label:'Target %',   data:target,  backgroundColor:colors.map(c=>c+'22'), borderColor:colors, borderWidth:2.5, borderRadius:5, borderSkipped:false,
+          borderDash:[5,3] }
       ]
     },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: {
-        legend: {
-          position: 'top',
-          labels: {font:{size:10,family:'Segoe UI'}, usePointStyle:true, padding:10}
-        },
-        tooltip: {
-          backgroundColor: 'rgba(30,58,95,0.92)',
-          callbacks: {
-            label: c => ' ' + c.dataset.label + ': ' + c.parsed.y.toFixed(1) + '%'
-          }
-        }
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      plugins:{
+        legend:{ position:'top', labels:{font:{size:10,family:'Segoe UI'},usePointStyle:true,padding:8} },
+        tooltip:{ backgroundColor:'rgba(30,58,95,0.92)', callbacks:{ label:c=>' '+c.dataset.label+': '+c.parsed.y.toFixed(1)+'%' } }
       },
-      scales: {
-        x: { grid:{display:false}, ticks:{font:{size:11,family:'Segoe UI'},color:'#374151'} },
-        y: {
-          min: 0, max: 100,
-          grid: {color:'#f3f4f6'},
-          ticks: {
-            font:{size:10,family:'Segoe UI'}, color:'#9ca3af',
-            callback: v => v + '%'
-          }
-        }
+      scales:{
+        x:{ grid:{display:false}, ticks:{font:{size:11,family:'Segoe UI'},color:'#374151'} },
+        y:{ min:0, max:100, grid:{color:'#f3f4f6'}, ticks:{font:{size:10,family:'Segoe UI'},color:'#9ca3af',callback:v=>v+'%'} }
       }
     }
   });
 
-  // Legenda con delta
+  // Legenda delta
   const leg = document.getElementById('dash-macro-legend');
   if(!leg) return;
   leg.innerHTML = labels.map((l,i)=>{
     const delta = attuale[i] - target[i];
-    const dStr  = (delta >= 0 ? '+' : '') + delta.toFixed(1) + '%';
-    // rosso (sotto target) o blu (sopra target), scala di intensità
-    let dColor;
-    if(delta < 0){
-      const intensity = Math.min(Math.abs(delta) / 10, 1);
-      const lightness = Math.round(65 - intensity * 25); // da ~65% (chiaro) a ~40% (scuro)
-      dColor = `hsl(0, 75%, ${lightness}%)`;
-    } else if(delta > 0){
-      const intensity = Math.min(delta / 10, 1);
-      const lightness = Math.round(65 - intensity * 25);
-      dColor = `hsl(220, 75%, ${lightness}%)`;
-    } else {
-      dColor = 'var(--gray-400)';
-    }
-    return `<div class="legend-item">
-      <div class="ldot" style="background:${colors[i]}"></div>
-      <div><strong>${l}</strong> — Attuale: <strong>${attuale[i]}%</strong> | Target: ${target[i]}% | Δ: <strong style="color:${dColor}">${dStr}</strong></div>
-    </div>`;
+    const dStr  = (delta>=0?'+':'')+delta.toFixed(1)+'%';
+    const dCol  = Math.abs(delta)<2?'var(--green)':Math.abs(delta)<5?'var(--gold)':'var(--red)';
+    return `<div class="legend-item"><div class="ldot" style="background:${colors[i]}"></div>`+
+           `<div style="font-size:11px"><strong>${l}</strong>: ${attuale[i]}% `+
+           `<span style="color:var(--gray-400)">| target ${target[i]}%</span> `+
+           `<strong style="color:${dCol}">${dStr}</strong></div></div>`;
   }).join('');
 }
 
-function renderNextPac(){} // mantenuta vuota per compatibilità (rimossa dalla dashboard)
+function renderNextPac(){} // rimossa dalla dashboard
 
 // ===================== CONFIGURAZIONE =====================
 function renderConfig(){
@@ -975,11 +893,6 @@ function calcImporto(){
   const p=+document.getElementById('r-prezzo').value||0;
   if(q>0&&p>0) document.getElementById('r-importo').value=(q*p).toFixed(4);
 }
-function calcQuote(){
-  const imp=+document.getElementById('r-importo').value||0;
-  const p=+document.getElementById('r-prezzo').value||0;
-  if(imp>0&&p>0) document.getElementById('r-quote').value=(imp/p).toFixed(6);
-}
 
 function renderRegistro(){
   // NON chiamare updateTickerSelect() qui: modifica il DOM del form
@@ -1022,48 +935,32 @@ function renderRegistro(){
     if(c===col) th.classList.add(dir===1?'sort-asc':'sort-desc');
   });
 
-  // --- Render righe con colonna mese laterale ---
+  // --- Render righe: costruisci HTML in array, assegna UNA VOLTA SOLA ---
   let totInv=0, totComm=0;
   const rows=[];
-  const MESI_BR=['Gen','Feb','Mar','Apr','Mag','Giu','Lug','Ago','Set','Ott','Nov','Dic'];
-  // Calcola gruppi mese sull'ordine corrente (post-sort)
-  const gruppi=[];
-  lista.forEach(function(a,idx){
-    var m=a.data?a.data.substring(0,7):'0000-00';
-    if(!gruppi.length||gruppi[gruppi.length-1].mese!==m){
-      var mm=parseInt(m.substring(5,7),10)-1;
-      var yy=m.substring(2,4);
-      var label=(mm>=0&&mm<12)?MESI_BR[mm]+" '"+yy:'?';
-      gruppi.push({mese:m,label:label,count:1,firstIdx:idx});
-    } else {
-      gruppi[gruppi.length-1].count++;
-    }
-  });
-  var firstOf={};
-  gruppi.forEach(function(g){ firstOf[g.firstIdx]=g; });
-  lista.forEach(function(a,idx){
-    var i=a._origIdx;
+  lista.forEach(a=>{
+    const i = a._origIdx;
     totInv+=a.importo; totComm+=a.comm;
-    var g=firstOf[idx];
-    var meseTd=g?'<td rowspan="'+g.count+'" style="background:var(--hbg);color:white;font-size:10px;font-weight:700;text-align:center;vertical-align:middle;white-space:nowrap;border-right:2px solid rgba(255,255,255,.2);padding:3px 5px;min-width:48px">'+g.label+'</td>':'';
-    rows.push('<tr>'+meseTd+'<td>'+fd(a.data)+'</td>'
-      +'<td><strong>'+a.ticker+'</strong></td>'
-      +'<td style="font-size:10px;color:var(--gray-400)">'+(a.isin||'–')+'</td>'
-      +'<td><span class="badge '+(a.tipo==='PAC'?'badge-blue':'badge-green')+'">'+a.tipo+'</span></td>'
-      +'<td>'+f4(a.quote)+'</td>'
-      +'<td>'+f4(a.prezzo)+'</td>'
-      +'<td class="fc"><strong>'+f2(a.importo)+'</strong></td>'
-      +'<td>'+f2(a.comm)+'</td>'
-      +'<td style="font-size:11px">'+(a.note||'–')+'</td>'
-      +'<td style="display:flex;gap:4px">'
-        +'<button class="btn-edit-row" onclick="openEditModal('+i+')">✏️</button>'
-        +'<button class="btn btn-danger btn-sm" onclick="removeAcq('+i+')">✕</button>'
-      +'</td></tr>');
+    rows.push(`<tr>
+      <td>${fd(a.data)}</td>
+      <td><strong>${a.ticker}</strong></td>
+      <td style="font-size:10px;color:var(--gray-400)">${a.isin||'–'}</td>
+      <td><span class="badge ${a.tipo==='PAC'?'badge-blue':'badge-green'}">${a.tipo}</span></td>
+      <td>${f4(a.quote)}</td>
+      <td>${f4(a.prezzo)}</td>
+      <td class="fc"><strong>${f2(a.importo)}</strong></td>
+      <td>${f2(a.comm)}</td>
+      <td style="font-size:11px">${a.note||'–'}</td>
+      <td style="display:flex;gap:4px">
+        <button class="btn-edit-row" onclick="openEditModal(${i})">✏️</button>
+        <button class="btn btn-danger btn-sm" onclick="removeAcq(${i})">✕</button>
+      </td>
+    </tr>`);
   });
-  tbody.innerHTML=rows.join('');
+  tbody.innerHTML = rows.join('');
 
   tfoot.innerHTML=`<tr style="background:var(--gray-100);font-weight:700">
-    <td colspan="7">TOTALE FILTRATI (${lista.length})</td>
+    <td colspan="6">TOTALE FILTRATI (${lista.length})</td>
     <td>${f2(totInv)}</td><td>${f2(totComm)}</td><td colspan="2"></td></tr>`;
 
   const cnt=document.getElementById('reg-count');
