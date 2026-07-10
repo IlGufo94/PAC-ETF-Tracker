@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>PAC ETF Tracker – Directa SIM</title>
+<title>PAC ETF Tracker</title>
 <style>
 :root {
   --blue:#1a56db; --blue-light:#ebf5ff; --blue-dark:#1341a8;
@@ -178,7 +178,7 @@ th.sort-asc,th.sort-desc{color:var(--blue)}
 <div id="app-header">
   <div>
     <h1>📊 PAC ETF Tracker</h1>
-    <span id="hdr-sub">Directa SIM – Piano di Accumulo Capitale</span>
+    <span id="hdr-sub">Piano di Accumulo Capitale</span>
   </div>
   <div id="hdr-right">
     <button class="btn btn-warn" onclick="exportJSON()" style="font-size:11px">⬇ Backup JSON</button>
@@ -258,7 +258,7 @@ th.sort-asc,th.sort-desc{color:var(--blue)}
         <div class="fg"><label>Nome</label><input type="text" id="n-nome" placeholder="Vanguard FTSE All-World"></div>
         <div class="fg"><label>Tipo</label><select id="n-tipo"><option>Azionario</option><option>Obblig. Governativo</option><option>Commodity</option><option>Altro</option></select></div>
         <div class="fg"><label>Asset Class</label><input type="text" id="n-class" placeholder="Global"></div>
-        <div class="fg"><label>Aliquota</label><select id="n-aliq"><option value="0.26">26%</option><option value="0.125">12.50%</option></select></div>
+        <div class="fg"><label>Aliquota %</label><input type="number" id="n-aliq" value="26" min="0" max="100" step="0.01" style="width:80px" title="Inserisci aliquota in %"></div>
         <div class="fg"><label>Importo PAC</label><input type="text" id="n-pac" placeholder="1 quota / 50"></div>
         <div class="fg"><label>Giorno</label><input type="number" id="n-giorno" min="1" max="31" value="23"></div>
         <div class="fg"><label>&nbsp;</label><button class="btn btn-primary" onclick="addEtf()">+ Aggiungi ETF</button></div>
@@ -267,7 +267,7 @@ th.sort-asc,th.sort-desc{color:var(--blue)}
         <strong>Aliquote fiscali:</strong>
         Azionario/Commodity <input type="text" id="aliq-az" value="26%" style="width:55px;display:inline-block;margin:0 6px">
         Titoli di Stato EU <input type="text" id="aliq-gov" value="12.50%" style="width:60px;display:inline-block;margin:0 6px"><br>
-        <em style="font-size:10px;color:var(--gray-400)">IBCI, VGEA, CSBGE3 → 12,5% (art. 2 D.Lgs. 239/1996) | EIMI, SMEA, VWCE, XDEV, SGLN → 26%</em>
+        <em style="font-size:10px;color:var(--gray-400)">Aliquota in %. Tipicamente: 26% azionario/commodity, 12,5% titoli di stato EU (art. 2 D.Lgs. 239/1996)</em>
       </div>
     </div>
   </div>
@@ -525,7 +525,8 @@ th.sort-asc,th.sort-desc{color:var(--blue)}
         <h3>Aliquote fiscali italiane (2026)</h3>
         <ul>
           <li><span class="badge badge-red">26%</span> EIMI, SMEA, VWCE, XDEV, SGLN (Azionario e Commodity)</li>
-          <li><span class="badge badge-green">12,5%</span> IBCI, VGEA, CSBGE3 (Titoli di Stato EU – art. 2 D.Lgs. 239/1996)</li>
+          <li><span class="badge badge-green">12,5%</span> Titoli di Stato EU (es. IBCI, VGEA, CSBGE3) – art. 2 D.Lgs. 239/1996</li>
+          <li>L'aliquota è configurabile liberamente per ogni ETF nella scheda Configurazione</li>
           <li>Le tasse sono stimate sulle plusvalenze latenti. Si pagano solo al momento della vendita.</li>
         </ul>
       </div>
@@ -540,13 +541,11 @@ th.sort-asc,th.sort-desc{color:var(--blue)}
         </ul>
       </div>
       <div class="guide-section">
-        <h3>Tickers su Borsa Italiana e Directa SIM</h3>
+        <h3>Tickers su Borsa Italiana</h3>
         <ul>
           <li>Tutti gli ETF sono su <strong>Borsa Italiana ETFplus</strong></li>
-          <li>Su Directa SIM usa il ticker diretto (VWCE, EIMI, SMEA…)</li>
           <li>Su Google Finance usa il prefisso <strong>BIT:</strong> (es. BIT:VWCE)</li>
-          <li>VWCE, SMEA, EIMI, XDEV → solo quote intere su Directa</li>
-          <li>SGLN, IBCI, VGEA/CSBGE3 → acquisto per importo fisso in EUR (quote frazionate)</li>
+          <li>Verifica con il tuo broker se l'ETF supporta quote intere o acquisto per importo</li>
         </ul>
       </div>
     </div>
@@ -851,10 +850,7 @@ function renderConfig(){
         ${['Azionario','Obblig. Governativo','Commodity','Altro'].map(o=>`<option${etf.tipo===o?' selected':''}>${o}</option>`).join('')}
       </select></td>
       <td class="ic"><input type="text" value="${etf.classe}" onchange="etfList[${i}].classe=this.value;saveAll()" style="width:120px"></td>
-      <td class="ic"><select onchange="etfList[${i}].aliquota=+this.value;saveAll()">
-        <option value="0.26"${etf.aliquota===0.26?' selected':''}>26%</option>
-        <option value="0.125"${etf.aliquota===0.125?' selected':''}>12.50%</option>
-      </select></td>
+      <td class="ic"><input type="number" value="${(etf.aliquota*100).toFixed(2)}" min="0" max="100" step="0.01" style="width:70px" title="Aliquota %" onchange="etfList[${i}].aliquota=(+this.value||0)/100;saveAll()"></td>
       <td class="ic"><input type="text" value="${etf.pac}" onchange="etfList[${i}].pac=this.value;saveAll()" style="width:75px"></td>
       <td class="ic"><input type="number" value="${etf.giorno}" onchange="etfList[${i}].giorno=+this.value;saveAll()" style="width:55px" min="1" max="31"></td>
       <td><button class="btn btn-danger btn-sm" onclick="removeEtf(${i})">✕</button></td>
@@ -868,7 +864,7 @@ function addEtf(){
   if(!t){alert('Inserisci il Ticker');return}
   etfList.push({ticker:t,isin:document.getElementById('n-isin').value.trim(),nome:document.getElementById('n-nome').value.trim(),
     tipo:document.getElementById('n-tipo').value,classe:document.getElementById('n-class').value.trim(),
-    aliquota:+document.getElementById('n-aliq').value,pac:document.getElementById('n-pac').value.trim(),
+    aliquota:(+document.getElementById('n-aliq').value||26)/100,pac:document.getElementById('n-pac').value.trim(),
     giorno:+document.getElementById('n-giorno').value||23});
   ['n-tick','n-isin','n-nome','n-class','n-pac'].forEach(id=>document.getElementById(id).value='');
   saveAll();renderConfig();
