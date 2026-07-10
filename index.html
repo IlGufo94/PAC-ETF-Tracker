@@ -245,7 +245,7 @@ th.sort-asc,th.sort-desc{color:var(--blue)}
   <div class="card">
     <div class="card-header">ETF – ANAGRAFICA E CONFIGURAZIONE PAC</div>
     <div class="card-body">
-      <div class="card-note">Celle <strong>gialle</strong> = input modificabili. Tutte le sezioni si aggiornano automaticamente quando modifichi qui.</div>
+      <div class="card-note">Tutti i campi della tabella sono modificabili direttamente. Aggiungi nuovi ETF tramite il form in basso; le altre sezioni si aggiornano in tempo reale.</div>
       <div class="tbl-wrap">
         <table>
           <thead><tr><th>Ticker</th><th>ISIN</th><th>Nome</th><th>Tipo Asset</th><th>Asset Class</th><th>Aliquota</th><th>Importo PAC (€)</th><th>Giorno PAC</th><th></th></tr></thead>
@@ -263,11 +263,8 @@ th.sort-asc,th.sort-desc{color:var(--blue)}
         <div class="fg"><label>Giorno</label><input type="number" id="n-giorno" min="1" max="31" value="23"></div>
         <div class="fg"><label>&nbsp;</label><button class="btn btn-primary" onclick="addEtf()">+ Aggiungi ETF</button></div>
       </div>
-      <div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--gray-200);font-size:12px;color:var(--gray-600)">
-        <strong>Aliquote fiscali:</strong>
-        Azionario/Commodity <input type="text" id="aliq-az" value="26%" style="width:55px;display:inline-block;margin:0 6px">
-        Titoli di Stato EU <input type="text" id="aliq-gov" value="12.50%" style="width:60px;display:inline-block;margin:0 6px"><br>
-        <em style="font-size:10px;color:var(--gray-400)">Aliquota in %. Tipicamente: 26% azionario/commodity, 12,5% titoli di stato EU (art. 2 D.Lgs. 239/1996)</em>
+      <div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--gray-200);font-size:11px;color:var(--gray-400)">
+        <em>Aliquota configurabile liberamente per ogni ETF (colonna Aliquota %). Tipicamente: 26% azionario/commodity, 12,5% titoli di stato EU – art. 2 D.Lgs. 239/1996.</em>
       </div>
     </div>
   </div>
@@ -283,7 +280,7 @@ th.sort-asc,th.sort-desc{color:var(--blue)}
       </div>
     </div>
     <div class="card-body">
-      <div class="card-note">Seleziona il Ticker → ISIN e dati si compilano automaticamente. <strong>Importo Totale</strong> = Quote × Prezzo (calcolato auto).</div>
+      <div class="card-note">Seleziona il Ticker → ISIN e dati si compilano automaticamente. <strong>Importo</strong> = Quote × Prezzo (e viceversa: inserisci Importo + Prezzo per calcolare le Quote automaticamente).</div>
       <div class="add-form">
         <div class="fg"><label>Data*</label>
           <div class="cal-wrap" id="cal-wrap-r">
@@ -295,7 +292,7 @@ th.sort-asc,th.sort-desc{color:var(--blue)}
         <div class="fg"><label>Tipo</label><select id="r-tipo"><option>PAC</option><option>SPOT</option></select></div>
         <div class="fg"><label>N. Quote</label><input type="number" id="r-quote" step="0.000001" min="0" placeholder="1" oninput="calcImporto()"></div>
         <div class="fg"><label>Prezzo/Quota (€)</label><input type="number" id="r-prezzo" step="0.01" min="0" oninput="calcImporto()"></div>
-        <div class="fg"><label>Importo Tot. (€)</label><input type="number" id="r-importo" step="0.01" min="0" placeholder="auto"></div>
+        <div class="fg"><label>Importo Tot. (€)</label><input type="number" id="r-importo" step="0.01" min="0" placeholder="auto" oninput="calcQuote()"></div>
         <div class="fg"><label>Commissioni (€)</label><input type="number" id="r-comm" step="0.01" min="0" value="0"></div>
         <div class="fg"><label>Note</label><input type="text" id="r-note" placeholder="opz."></div>
         <div class="fg"><label>&nbsp;</label><button class="btn btn-primary" onclick="addAcquisto()">+ Aggiungi</button></div>
@@ -503,7 +500,7 @@ th.sort-asc,th.sort-desc{color:var(--blue)}
       <div class="guide-section">
         <h3>Come iniziare</h3>
         <ol>
-          <li><strong>⚙️ Configurazione:</strong> verifica l'anagrafica ETF. Celle gialle = editabili. Aggiungi nuovi ETF con il form in basso.</li>
+          <li><strong>⚙️ Configurazione:</strong> verifica l'anagrafica ETF. Tutti i campi sono editabili. Aggiungi nuovi ETF con il form in basso.</li>
           <li><strong>💹 Prezzi Correnti:</strong> clicca sul link justETF di ogni ETF → copia il prezzo → incollalo → Salva & Aggiorna.</li>
           <li><strong>📝 Registro:</strong> inserisci ogni acquisto. Scegli il ticker dal dropdown → ISIN e dati si compilano automaticamente.</li>
           <li><strong>📈 Riepilogo:</strong> aggiornato automaticamente. Mostra PMC, P&L e tasse stimate.</li>
@@ -579,14 +576,6 @@ th.sort-asc,th.sort-desc{color:var(--blue)}
 <script>
 // ===================== DATI DEFAULT =====================
 const DEFAULT_ETF = [
-  {ticker:'EIMI',  isin:'IE00BKM4GZ66', nome:'iShares Core MSCI EM IMI',       tipo:'Azionario',           classe:'Emerging Markets',    aliquota:0.26,  pac:'', giorno:1},
-  {ticker:'SMEA',  isin:'IE00B4K48X80', nome:'iShares Core MSCI Europe',        tipo:'Azionario',           classe:'Europa',               aliquota:0.26,  pac:'', giorno:1},
-  {ticker:'VWCE',  isin:'IE00BK5BQT80', nome:'Vanguard FTSE All-World Acc',     tipo:'Azionario',           classe:'Global',               aliquota:0.26,  pac:'', giorno:1},
-  {ticker:'IBCI',  isin:'IE00B0M62X26', nome:'iShares EUR Infl Lnkd Govt',      tipo:'Obblig. Governativo', classe:'Titoli di Stato EUR',  aliquota:0.125, pac:'',       giorno:1},
-  {ticker:'VGEA',  isin:'IE00BH04GL39', nome:'Vanguard EUR Govt Bond',          tipo:'Obblig. Governativo', classe:'Titoli di Stato EUR',  aliquota:0.125, pac:'',       giorno:1},
-  {ticker:'SGLN',  isin:'IE00B4ND3602', nome:'iShares Physical Gold ETC',       tipo:'Commodity',           classe:'Oro',                  aliquota:0.26,  pac:'',       giorno:1},
-  {ticker:'CSBGE3',isin:'IE00B3VTMJ91', nome:'iShares Euro Govt Bond 1-3yr',    tipo:'Obblig. Governativo', classe:'Titoli di Stato EUR',  aliquota:0.125, pac:'',       giorno:1},
-  {ticker:'XDEV',  isin:'IE00BL25JM42', nome:'Xtrackers MSCI World Value 1C',   tipo:'Azionario',           classe:'Global Value',         aliquota:0.26,  pac:'', giorno:1},
 ];
 const DEFAULT_ACQUISTI = [
 ];
@@ -921,6 +910,12 @@ function calcImporto(){
   const q=+document.getElementById('r-quote').value||0;
   const p=+document.getElementById('r-prezzo').value||0;
   if(q>0&&p>0) document.getElementById('r-importo').value=(q*p).toFixed(4);
+}
+function calcQuote(){
+  const imp=+document.getElementById('r-importo').value||0;
+  const p=+document.getElementById('r-prezzo').value||0;
+  const qEl=document.getElementById('r-quote');
+  if(imp>0&&p>0) qEl.value=(imp/p).toFixed(6);
 }
 
 function renderRegistro(){
