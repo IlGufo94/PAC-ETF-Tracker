@@ -97,6 +97,7 @@ canvas{display:block;width:100%!important}
 .badge-green{background:var(--green-light);color:var(--green)}
 .badge-red{background:var(--red-light);color:var(--red)}
 .badge-purple{background:var(--purple-light);color:var(--purple)}
+tr.row-vendita td{background:#fff5f5!important}
 
 /* RIBILANCIAMENTO */
 .ribilanciamento-bar{height:8px;border-radius:4px;background:var(--gray-200);overflow:hidden;margin-top:3px}
@@ -273,14 +274,14 @@ th.sort-asc,th.sort-desc{color:var(--blue)}
 <!-- ==================== REGISTRO ACQUISTI ==================== -->
 <div id="tab-registro" class="tab-content">
   <div class="card">
-    <div class="card-header">REGISTRO ACQUISTI – PAC + Spot
+    <div class="card-header">REGISTRO ACQUISTI – PAC + Spot + Vendite
       <div style="display:flex;gap:6px">
         <button class="btn btn-success btn-sm" onclick="exportCSV()">⬇ CSV</button>
         <label class="btn btn-primary btn-sm" style="cursor:pointer">⬆ CSV<input type="file" accept=".csv" style="display:none" onchange="importCSV(event)"></label>
       </div>
     </div>
     <div class="card-body">
-      <div class="card-note">Seleziona il Ticker → ISIN e dati si compilano automaticamente. <strong>Importo</strong> = Quote × Prezzo (e viceversa: inserisci Importo + Prezzo per calcolare le Quote automaticamente).</div>
+      <div class="card-note">Seleziona il Ticker → ISIN e dati si compilano automaticamente. <strong>Importo</strong> = Quote × Prezzo (e viceversa: inserisci Importo + Prezzo per calcolare le Quote automaticamente). Per le <strong>Vendite</strong> inserisci quote e prezzo di vendita: le quote vengono sottratte dal portafoglio.</div>
       <div class="add-form">
         <div class="fg"><label>Data*</label>
           <div class="cal-wrap" id="cal-wrap-r">
@@ -289,7 +290,7 @@ th.sort-asc,th.sort-desc{color:var(--blue)}
             <div id="mini-cal" data-target="r-data"></div>
           </div></div>
         <div class="fg"><label>Ticker*</label><select id="r-ticker" onchange="autoFillRegistro()"></select></div>
-        <div class="fg"><label>Tipo</label><select id="r-tipo"><option>PAC</option><option>SPOT</option></select></div>
+        <div class="fg"><label>Tipo</label><select id="r-tipo"><option>PAC</option><option>SPOT</option><option>VENDITA</option></select></div>
         <div class="fg"><label>N. Quote</label><input type="number" id="r-quote" step="0.000001" min="0" placeholder="1" oninput="calcImporto()"></div>
         <div class="fg"><label>Prezzo/Quota (€)</label><input type="number" id="r-prezzo" step="0.01" min="0" oninput="calcImporto()"></div>
         <div class="fg"><label>Importo Tot. (€)</label><input type="number" id="r-importo" step="0.01" min="0" placeholder="auto" oninput="calcQuote()"></div>
@@ -306,6 +307,7 @@ th.sort-asc,th.sort-desc{color:var(--blue)}
           <option value="">Tutti i tipi</option>
           <option value="PAC">PAC</option>
           <option value="SPOT">SPOT</option>
+          <option value="VENDITA">VENDITA</option>
         </select>
         <input type="text" id="flt-note" placeholder="Cerca nelle note…" oninput="renderRegistro()">
         <input type="text" id="flt-data-da" placeholder="Da GG/MM/AAAA" maxlength="10" oninput="renderRegistro()" style="max-width:130px">
@@ -393,7 +395,7 @@ th.sort-asc,th.sort-desc{color:var(--blue)}
     <div class="card-body">
       <div class="card-note">
         Inserisci <strong>Stipendio Netto</strong> e <strong>Spese Mensili</strong> per calcolare quante risorse rimangono e che % stai investendo.<br>
-        <strong>% su stipendio</strong> = Totale investito / Stipendio &nbsp;|&nbsp;
+        <strong>% su stipendio</strong> = Netto investito / Stipendio &nbsp;|&nbsp;
         <strong>% su disponibile</strong> = Totale investito / (Stipendio + Liquidità Aggiuntiva − Spese) — più significativa.
       </div>
       <div class="tbl-wrap">
@@ -403,7 +405,8 @@ th.sort-asc,th.sort-desc{color:var(--blue)}
             <th>N. Op.</th>
             <th>PAC (€)</th>
             <th>SPOT (€)</th>
-            <th>Totale inv. (€)</th>
+            <th style="color:var(--red)">VEND (€)</th>
+            <th>Netto inv. (€)</th>
             <th>Comm. (€)</th>
             <th>Stipendio Netto (€) ✏️</th>
             <th>Liquidità Aggiuntiva (€) ✏️</th>
@@ -534,6 +537,7 @@ th.sort-asc,th.sort-desc{color:var(--blue)}
           <li>Usa <strong>⬇ Backup JSON</strong> (header) per esportare tutti i dati (ETF, acquisti, prezzi, target, stipendi).</li>
           <li>Usa <strong>⬆ Importa JSON</strong> per ripristinare su un altro dispositivo in un click.</li>
           <li>Per il Registro acquisti puoi usare anche Esporta/Importa CSV.</li>
+    <li>Le <strong>Vendite</strong> (tipo VENDITA) sottraggono le quote dal portafoglio. Il P&L realizzato è visibile nel Riepilogo come differenza tra valore di mercato e costo medio.</li>
           <li>Google Drive può aprire questo file ma <em>non salva lo stato</em> tra dispositivi — usa il backup JSON.</li>
         </ul>
       </div>
@@ -552,12 +556,12 @@ th.sort-asc,th.sort-desc{color:var(--blue)}
 <!-- ==================== MODALE MODIFICA ACQUISTO ==================== -->
 <div id="edit-modal-overlay" onclick="if(event.target===this)closeEditModal()">
   <div id="edit-modal">
-    <h3>✏️ Modifica acquisto</h3>
+    <h3>✏️ Modifica operazione</h3>
     <div class="edit-grid">
       <div class="fg"><label>Data (GG/MM/AAAA)*</label><input type="text" id="em-data" placeholder="GG/MM/AAAA" maxlength="10"></div>
       <div class="fg"><label>Ticker*</label><select id="em-ticker" onchange="emAutoFill()"></select></div>
       <div class="fg"><label>Tipo</label>
-        <select id="em-tipo"><option>PAC</option><option>SPOT</option></select>
+        <select id="em-tipo"><option>PAC</option><option>SPOT</option><option>VENDITA</option></select>
       </div>
       <div class="fg"><label>N. Quote</label><input type="number" id="em-quote" step="0.000001" min="0" oninput="emCalcImporto()"></div>
       <div class="fg"><label>Prezzo/Quota (€)</label><input type="number" id="em-prezzo" step="0.0001" min="0" oninput="emCalcImporto()"></div>
@@ -635,8 +639,9 @@ function calcPortafoglio(){
   const res={};
   etfList.forEach(etf=>{
     const acq=acquisti.filter(a=>a.ticker===etf.ticker);
-    const totQ=acq.reduce((s,a)=>s+a.quote,0);
-    const totI=acq.reduce((s,a)=>s+a.importo,0);
+    // acquisti sommano, vendite sottraggono quote e importo
+    const totQ=acq.reduce((s,a)=>a.tipo==='VENDITA'?s-a.quote:s+a.quote,0);
+    const totI=acq.reduce((s,a)=>a.tipo==='VENDITA'?s-a.importo:s+a.importo,0);
     const pmc=totQ>0?totI/totQ:0;
     const pc=prezzi[etf.ticker]?.prezzo||0;
     const vm=totQ*pc;
@@ -668,6 +673,8 @@ function renderDashboard(){
     {label:'Tasse Stimate',     value:'€ '+f2(totTasse),sub:'su plusval.', accent:'#e3a008'},
     {label:'P&L Netto',         value:'€ '+f2(totN),    sub:'dopo tasse', accent:totN>=0?'#057a55':'#e02424'},
     {label:'N. ETF attivi',     value:vals.filter(d=>d.totQ>0).length,sub:'in portafoglio',accent:'#9061f9'},
+    (()=>{const pv=acquisti.filter(a=>a.tipo==='VENDITA').reduce((s,a)=>s+a.importo,0);
+     return {label:'Proventi vendite',value:'€ '+f2(pv),sub:'totale incassato',accent:'#e3a008'};})()
   ];
   document.getElementById('kpi-grid').innerHTML=kpis.map(k=>`
     <div class="kpi" style="--accent:${k.accent}">
@@ -690,8 +697,8 @@ function renderDashLine(data){
     const d=new Date(a.data);
     const key=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');
     if(!byMese[key]) byMese[key]={inv:0,vm:0};
-    byMese[key].inv+=a.importo;
-    byMese[key].vm+=a.importo; // proxy: use purchase price for historical
+    if(a.tipo==='VENDITA'){ byMese[key].inv-=a.importo; byMese[key].vm-=a.importo; }
+    else { byMese[key].inv+=a.importo; byMese[key].vm+=a.importo; } // proxy
   });
   const mesi=Object.keys(byMese).sort();
   let cumI=0,cumVM=0;
@@ -1008,7 +1015,7 @@ function renderRegistro(){
       +'<td>'+fd(a.data)+'</td>'
       +'<td><strong>'+a.ticker+'</strong></td>'
       +'<td style="font-size:10px;color:var(--gray-400)">'+(a.isin||'–')+'</td>'
-      +'<td><span class="badge '+(a.tipo==='PAC'?'badge-blue':'badge-green')+'">'+a.tipo+'</span></td>'
+      +'<td><span class="badge '+(a.tipo==='PAC'?'badge-blue':a.tipo==='VENDITA'?'badge-red':'badge-green')+'">'+a.tipo+'</span></td>'
       +'<td>'+f4(a.quote)+'</td>'
       +'<td>'+f4(a.prezzo)+'</td>'
       +'<td class="fc"><strong>'+f2(a.importo)+'</strong></td>'
@@ -1022,8 +1029,10 @@ function renderRegistro(){
   tbody.innerHTML=rows.join('');
 
   tfoot.innerHTML=`<tr style="background:var(--gray-100);font-weight:700">
-    <td colspan="8">TOTALE FILTRATI (${lista.length})</td>
-    <td>${f2(totInv)}</td><td>${f2(totComm)}</td><td colspan="2"></td></tr>`;
+    <td colspan="7">TOTALE FILTRATI (${lista.length})</td>
+    <td style="color:var(--green)">▲ ${f2(totInv)}</td>
+    <td style="color:var(--red)">▼ ${f2(totVendite)}</td>
+    <td>${f2(totComm)}</td><td colspan="2"></td></tr>`;
 
   const cnt=document.getElementById('reg-count');
   if(cnt) cnt.textContent=lista.length+' / '+acquisti.length+' operazioni';
@@ -1277,21 +1286,22 @@ function renderMensile(){
     const[ma,ya]=a.split('/');const[mb,yb]=b.split('/');
     return(ya-yb)||(ma-mb);
   });
-  let tP=0,tS=0,tC=0,tN=0;
+  let tP=0,tS=0,tV=0,tC=0,tN=0;
   const tbody=document.getElementById('mensile-tbody');
   if(!tbody)return;
   tbody.innerHTML='';
   mesi.forEach(mese=>{
     const m=byMese[mese];
     const tot=m.pac+m.spot;
+    const netto=tot-(m.vend||0);
     const stip=stipendi[mese]||0;
     const spe=spese[mese]||0;
     const ext=extra[mese]||0;
     const reddito=stip+ext;
     const disp=reddito>0?Math.max(0,reddito-spe):0;
-    const pctStip=stip>0?tot/stip:null;
-    const pctDisp=disp>0?tot/disp:null;
-    tP+=m.pac;tS+=m.spot;tC+=m.comm;tN+=m.n;
+    const pctStip=stip>0?netto/stip:null;
+    const pctDisp=disp>0?netto/disp:null;
+    tP+=m.pac;tS+=m.spot;tV+=(m.vend||0);tC+=m.comm;tN+=m.n;
 
     // Color % su disponibile: verde <30%, giallo 30-50%, rosso >50%
     const colorDisp=pctDisp===null?'var(--gray-600)':pctDisp<0.3?'var(--green)':pctDisp<0.5?'var(--gold)':'var(--red)';
@@ -1302,7 +1312,8 @@ function renderMensile(){
       <td>${m.n}</td>
       <td>${f2(m.pac)}</td>
       <td>${f2(m.spot)}</td>
-      <td><strong>${f2(tot)}</strong></td>
+      <td style="color:var(--red)">${(m.vend||0)>0?'▼ '+f2(m.vend||0):'–'}</td>
+      <td><strong>${f2(netto)}</strong></td>
       <td>${f2(m.comm)}</td>
       <td class="ic"><input type="number" value="${stip||''}" placeholder="es. 2500" style="width:90px"
         onchange="stipendi['${mese}']=+this.value||0;saveAll();renderMensile()" step="0.01" min="0"></td>
@@ -1320,7 +1331,8 @@ function renderMensile(){
   const tfoot=document.getElementById('mensile-tfoot');
   if(tfoot) tfoot.innerHTML=`<tr style="font-weight:700;background:var(--gray-100)">
     <td>TOTALE</td><td>${tN}</td><td>${f2(tP)}</td><td>${f2(tS)}</td>
-    <td>${f2(tP+tS)}</td><td>${f2(tC)}</td><td colspan="6">–</td>
+    <td style="color:var(--red)">${tV>0?'▼ '+f2(tV):'–'}</td>
+    <td>${f2(tP+tS-tV)}</td><td>${f2(tC)}</td><td colspan="5">–</td>
   </tr>`;
 }
 function renderAndamento(){
@@ -1332,7 +1344,8 @@ function renderAndamento(){
     const d=new Date(a.data);
     const key=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');
     if(!byMese[key]) byMese[key]={inv:0};
-    byMese[key].inv+=a.importo;
+    if(a.tipo==='VENDITA') byMese[key].inv-=a.importo;
+    else byMese[key].inv+=a.importo;
   });
   const mesi=Object.keys(byMese).sort();
   let cumI=0;
