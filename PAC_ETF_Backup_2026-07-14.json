@@ -1,0 +1,682 @@
+{
+  "etfList": [
+    {
+      "ticker": "EIMI",
+      "isin": "IE00BKM4GZ66",
+      "nome": "iShares Core MSCI EM IMI",
+      "tipo": "Azionario",
+      "classe": "Mercati emergenti",
+      "aliquota": 0.26,
+      "pac": "",
+      "giorno": 0
+    },
+    {
+      "ticker": "SMEA",
+      "isin": "IE00B4K48X80",
+      "nome": "iShares Core MSCI Europe",
+      "tipo": "Azionario",
+      "classe": "Europa",
+      "aliquota": 0.26,
+      "pac": "",
+      "giorno": 0
+    },
+    {
+      "ticker": "VWCE",
+      "isin": "IE00BK5BQT80",
+      "nome": "Vanguard FTSE All-World Acc",
+      "tipo": "Azionario",
+      "classe": "Globale",
+      "aliquota": 0.26,
+      "pac": "",
+      "giorno": 0
+    },
+    {
+      "ticker": "IBCI",
+      "isin": "IE00B0M62X26",
+      "nome": "iShares EUR Infl Lnkd Govt",
+      "tipo": "Obblig. Governativo",
+      "classe": "EUR Govt Bond",
+      "aliquota": 0.125,
+      "pac": "",
+      "giorno": 0
+    },
+    {
+      "ticker": "VGEA",
+      "isin": "IE00BH04GL39",
+      "nome": "Vanguard EUR Govt Bond",
+      "tipo": "Obblig. Governativo",
+      "classe": "EUR Govt Bond Infl Lnkd",
+      "aliquota": 0.125,
+      "pac": "",
+      "giorno": 0
+    },
+    {
+      "ticker": "SGLN",
+      "isin": "IE00B4ND3602",
+      "nome": "iShares Physical Gold ETC",
+      "tipo": "Commodity",
+      "classe": "Oro",
+      "aliquota": 0.26,
+      "pac": "",
+      "giorno": 0
+    },
+    {
+      "ticker": "CSBGE3",
+      "isin": "IE00B3VTMJ91",
+      "nome": "iShares Euro Govt Bond 1-3yr",
+      "tipo": "Obblig. Governativo",
+      "classe": "EUR Govt Bond",
+      "aliquota": 0.125,
+      "pac": "",
+      "giorno": 0
+    },
+    {
+      "ticker": "AASI",
+      "isin": "LU1681044480",
+      "nome": "Amundi MSCI Emerging Markets Asia UCITS ETF EUR (C)",
+      "tipo": "Azionario",
+      "classe": "Mercati emergenti",
+      "aliquota": 0.26,
+      "pac": "",
+      "giorno": 0
+    }
+  ],
+  "acquisti": [
+    {
+      "data": "2026-02-23",
+      "ticker": "VWCE",
+      "isin": "IE00BK5BQT80",
+      "tipo": "PAC",
+      "quote": 1,
+      "prezzo": 148,
+      "importo": 148,
+      "comm": 0,
+      "note": ""
+    },
+    {
+      "data": "2026-02-23",
+      "ticker": "SMEA",
+      "isin": "IE00B4K48X80",
+      "tipo": "PAC",
+      "quote": 1,
+      "prezzo": 99.76,
+      "importo": 99.76,
+      "comm": 0,
+      "note": ""
+    },
+    {
+      "data": "2026-03-23",
+      "ticker": "VWCE",
+      "isin": "IE00BK5BQT80",
+      "tipo": "PAC",
+      "quote": 1,
+      "prezzo": 143.32,
+      "importo": 143.32,
+      "comm": 0,
+      "note": ""
+    },
+    {
+      "data": "2026-03-23",
+      "ticker": "EIMI",
+      "isin": "IE00BKM4GZ66",
+      "tipo": "PAC",
+      "quote": 1,
+      "prezzo": 40.26,
+      "importo": 40.26,
+      "comm": 0,
+      "note": ""
+    },
+    {
+      "data": "2026-03-23",
+      "ticker": "SMEA",
+      "isin": "IE00B4K48X80",
+      "tipo": "PAC",
+      "quote": 1,
+      "prezzo": 91.92,
+      "importo": 91.92,
+      "comm": 0,
+      "note": ""
+    },
+    {
+      "data": "2026-04-01",
+      "ticker": "VWCE",
+      "isin": "IE00BK5BQT80",
+      "tipo": "PAC",
+      "quote": 1,
+      "prezzo": 144.88,
+      "importo": 144.88,
+      "comm": 0,
+      "note": ""
+    },
+    {
+      "data": "2026-04-01",
+      "ticker": "SMEA",
+      "isin": "IE00B4K48X80",
+      "tipo": "PAC",
+      "quote": 1,
+      "prezzo": 95.27,
+      "importo": 95.27,
+      "comm": 0,
+      "note": ""
+    },
+    {
+      "data": "2026-04-01",
+      "ticker": "EIMI",
+      "isin": "IE00BKM4GZ66",
+      "tipo": "PAC",
+      "quote": 1,
+      "prezzo": 40.64,
+      "importo": 40.64,
+      "comm": 0,
+      "note": ""
+    },
+    {
+      "data": "2026-04-23",
+      "ticker": "VWCE",
+      "isin": "IE00BK5BQT80",
+      "tipo": "PAC",
+      "quote": 1,
+      "prezzo": 153.8,
+      "importo": 153.8,
+      "comm": 0,
+      "note": ""
+    },
+    {
+      "data": "2026-04-23",
+      "ticker": "SMEA",
+      "isin": "IE00B4K48X80",
+      "tipo": "PAC",
+      "quote": 1,
+      "prezzo": 98.13,
+      "importo": 98.13,
+      "comm": 0,
+      "note": ""
+    },
+    {
+      "data": "2026-04-23",
+      "ticker": "EIMI",
+      "isin": "IE00BKM4GZ66",
+      "tipo": "PAC",
+      "quote": 1,
+      "prezzo": 44.06,
+      "importo": 44.06,
+      "comm": 0,
+      "note": ""
+    },
+    {
+      "data": "2026-05-25",
+      "ticker": "SMEA",
+      "isin": "IE00B4K48X80",
+      "tipo": "PAC",
+      "quote": 1,
+      "prezzo": 102.64,
+      "importo": 102.64,
+      "comm": 0,
+      "note": ""
+    },
+    {
+      "data": "2026-05-25",
+      "ticker": "VWCE",
+      "isin": "IE00BK5BQT80",
+      "tipo": "PAC",
+      "quote": 1,
+      "prezzo": 162.77,
+      "importo": 162.77,
+      "comm": 0,
+      "note": ""
+    },
+    {
+      "data": "2026-05-25",
+      "ticker": "EIMI",
+      "isin": "IE00BKM4GZ66",
+      "tipo": "PAC",
+      "quote": 1,
+      "prezzo": 47.4,
+      "importo": 47.4,
+      "comm": 0,
+      "note": ""
+    },
+    {
+      "data": "2026-06-02",
+      "ticker": "IBCI",
+      "isin": "IE00B0M62X26",
+      "tipo": "PAC",
+      "quote": 0.209881,
+      "prezzo": 238.23,
+      "importo": 50,
+      "comm": 0,
+      "note": ""
+    },
+    {
+      "data": "2026-06-02",
+      "ticker": "VGEA",
+      "isin": "IE00BH04GL39",
+      "tipo": "PAC",
+      "quote": 3.109968,
+      "prezzo": 24.116,
+      "importo": 75,
+      "comm": 0,
+      "note": ""
+    },
+    {
+      "data": "2026-06-02",
+      "ticker": "SGLN",
+      "isin": "IE00B4ND3602",
+      "tipo": "PAC",
+      "quote": 0.331345,
+      "prezzo": 75.45,
+      "importo": 25,
+      "comm": 0,
+      "note": ""
+    },
+    {
+      "data": "2026-06-02",
+      "ticker": "SGLN",
+      "isin": "IE00B4ND3602",
+      "tipo": "SPOT",
+      "quote": 0.163419,
+      "prezzo": 75.45,
+      "importo": 12.33,
+      "comm": 0,
+      "note": ""
+    },
+    {
+      "data": "2026-07-02",
+      "ticker": "IBCI",
+      "isin": "IE00B0M62X26",
+      "tipo": "PAC",
+      "quote": 0.210544,
+      "prezzo": 237.48,
+      "importo": 50,
+      "comm": 0,
+      "note": ""
+    },
+    {
+      "data": "2026-07-02",
+      "ticker": "VGEA",
+      "isin": "IE00BH04GL39",
+      "tipo": "PAC",
+      "quote": 3.1,
+      "prezzo": 24.14,
+      "importo": 74.834,
+      "comm": 0,
+      "note": ""
+    },
+    {
+      "data": "2026-07-02",
+      "ticker": "SGLN",
+      "isin": "IE00B4ND3602",
+      "tipo": "PAC",
+      "quote": 0.33,
+      "prezzo": 70.68,
+      "importo": 23.32,
+      "comm": 0,
+      "note": ""
+    },
+    {
+      "data": "2026-07-02",
+      "ticker": "VWCE",
+      "isin": "IE00BK5BQT80",
+      "tipo": "PAC",
+      "quote": 1,
+      "prezzo": 168.85,
+      "importo": 168.85,
+      "comm": 0,
+      "note": ""
+    },
+    {
+      "data": "2026-07-02",
+      "ticker": "EIMI",
+      "isin": "IE00BKM4GZ66",
+      "tipo": "PAC",
+      "quote": 1,
+      "prezzo": 48.32,
+      "importo": 48.32,
+      "comm": 0,
+      "note": ""
+    },
+    {
+      "data": "2026-07-02",
+      "ticker": "SMEA",
+      "isin": "IE00B4K48X80",
+      "tipo": "PAC",
+      "quote": 1,
+      "prezzo": 105.55,
+      "importo": 105.55,
+      "comm": 0,
+      "note": ""
+    },
+    {
+      "data": "2026-07-08",
+      "ticker": "SMEA",
+      "isin": "IE00B4K48X80",
+      "tipo": "SPOT",
+      "quote": 3,
+      "prezzo": 103.14,
+      "importo": 309.42,
+      "comm": 0,
+      "note": "3k€ da papà"
+    },
+    {
+      "data": "2026-07-08",
+      "ticker": "VWCE",
+      "isin": "IE00BK5BQT80",
+      "tipo": "SPOT",
+      "quote": 2,
+      "prezzo": 163.71,
+      "importo": 327.42,
+      "comm": 0,
+      "note": "3k€ da papà"
+    },
+    {
+      "data": "2026-07-08",
+      "ticker": "EIMI",
+      "isin": "IE00BKM4GZ66",
+      "tipo": "SPOT",
+      "quote": 5,
+      "prezzo": 46.73,
+      "importo": 233.65,
+      "comm": 0,
+      "note": "3k€ da papà"
+    },
+    {
+      "data": "2026-06-23",
+      "ticker": "VWCE",
+      "isin": "IE00BK5BQT80",
+      "tipo": "PAC",
+      "quote": 1,
+      "prezzo": 163.92,
+      "importo": 163.92,
+      "comm": 0,
+      "note": ""
+    },
+    {
+      "data": "2026-06-23",
+      "ticker": "EIMI",
+      "isin": "IE00BKM4GZ66",
+      "tipo": "PAC",
+      "quote": 1,
+      "prezzo": 47.4,
+      "importo": 47.4,
+      "comm": 0,
+      "note": ""
+    },
+    {
+      "data": "2026-06-23",
+      "ticker": "SMEA",
+      "isin": "IE00B4K48X80",
+      "tipo": "PAC",
+      "quote": 1,
+      "prezzo": 102.78,
+      "importo": 102.78,
+      "comm": 0,
+      "note": ""
+    },
+    {
+      "data": "2026-02-23",
+      "ticker": "AASI",
+      "isin": "LU1681044480",
+      "tipo": "PAC",
+      "quote": 1,
+      "prezzo": 50.69,
+      "importo": 50.69,
+      "comm": 0,
+      "note": ""
+    },
+    {
+      "data": "2026-02-06",
+      "ticker": "SGLN",
+      "isin": "IE00B4ND3602",
+      "tipo": "SPOT",
+      "quote": 0.372531,
+      "prezzo": 80.53,
+      "importo": 30,
+      "comm": 1,
+      "note": "Apertura Trade Republic"
+    },
+    {
+      "data": "2026-02-06",
+      "ticker": "SGLN",
+      "isin": "IE00B4ND3602",
+      "tipo": "SPOT",
+      "quote": 0.372462,
+      "prezzo": 80.545,
+      "importo": 30,
+      "comm": 1,
+      "note": "Apertura Trade Republic"
+    },
+    {
+      "data": "2026-02-06",
+      "ticker": "SGLN",
+      "isin": "IE00B4ND3602",
+      "tipo": "SPOT",
+      "quote": 0.3725,
+      "prezzo": 80.54,
+      "importo": 30,
+      "comm": 1,
+      "note": "Apertura Trade Republic"
+    },
+    {
+      "data": "2026-02-16",
+      "ticker": "IBCI",
+      "isin": "IE00B0M62X26",
+      "tipo": "PAC",
+      "quote": 0.106591,
+      "prezzo": 234.54,
+      "importo": 25,
+      "comm": 0,
+      "note": ""
+    },
+    {
+      "data": "2026-02-16",
+      "ticker": "SGLN",
+      "isin": "IE00B4ND3602",
+      "tipo": "PAC",
+      "quote": 0.060983,
+      "prezzo": 81.99,
+      "importo": 5,
+      "comm": 0,
+      "note": ""
+    },
+    {
+      "data": "2026-02-16",
+      "ticker": "VGEA",
+      "isin": "IE00BH04GL39",
+      "tipo": "PAC",
+      "quote": 1.02995,
+      "prezzo": 24.273,
+      "importo": 25,
+      "comm": 0,
+      "note": ""
+    },
+    {
+      "data": "2026-03-02",
+      "ticker": "SGLN",
+      "isin": "IE00B4ND3602",
+      "tipo": "SPOT",
+      "quote": 0.093567,
+      "prezzo": 89.24,
+      "importo": 8.35,
+      "comm": 0,
+      "note": ""
+    },
+    {
+      "data": "2026-03-16",
+      "ticker": "IBCI",
+      "isin": "IE00B0M62X26",
+      "tipo": "PAC",
+      "quote": 0.10626,
+      "prezzo": 235.27,
+      "importo": 25,
+      "comm": 0,
+      "note": ""
+    },
+    {
+      "data": "2026-03-16",
+      "ticker": "SGLN",
+      "isin": "IE00B4ND3602",
+      "tipo": "PAC",
+      "quote": 0.059038,
+      "prezzo": 84.69,
+      "importo": 5,
+      "comm": 0,
+      "note": ""
+    },
+    {
+      "data": "2026-03-16",
+      "ticker": "VGEA",
+      "isin": "IE00BH04GL39",
+      "tipo": "PAC",
+      "quote": 1.045019,
+      "prezzo": 23.923,
+      "importo": 25,
+      "comm": 0,
+      "note": ""
+    },
+    {
+      "data": "2026-04-02",
+      "ticker": "SGLN",
+      "isin": "IE00B4ND3602",
+      "tipo": "SPOT",
+      "quote": 0.167874,
+      "prezzo": 77.97,
+      "importo": 13.09,
+      "comm": 0,
+      "note": ""
+    },
+    {
+      "data": "2026-04-16",
+      "ticker": "SGLN",
+      "isin": "IE00B4ND3602",
+      "tipo": "PAC",
+      "quote": 0.063083,
+      "prezzo": 79.26,
+      "importo": 5,
+      "comm": 0,
+      "note": ""
+    },
+    {
+      "data": "2026-04-16",
+      "ticker": "IBCI",
+      "isin": "IE00B0M62X26",
+      "tipo": "PAC",
+      "quote": 0.106446,
+      "prezzo": 234.86,
+      "importo": 25,
+      "comm": 0,
+      "note": ""
+    },
+    {
+      "data": "2026-04-16",
+      "ticker": "VGEA",
+      "isin": "IE00BH04GL39",
+      "tipo": "PAC",
+      "quote": 1.045412,
+      "prezzo": 23.914,
+      "importo": 25,
+      "comm": 0,
+      "note": ""
+    },
+    {
+      "data": "2026-05-04",
+      "ticker": "SGLN",
+      "isin": "IE00B4ND3602",
+      "tipo": "SPOT",
+      "quote": 0.086279,
+      "prezzo": 75.8,
+      "importo": 6.54,
+      "comm": 0,
+      "note": ""
+    },
+    {
+      "data": "2026-05-18",
+      "ticker": "IBCI",
+      "isin": "IE00B0M62X26",
+      "tipo": "PAC",
+      "quote": 0.105708,
+      "prezzo": 236.5,
+      "importo": 25,
+      "comm": 0,
+      "note": ""
+    },
+    {
+      "data": "2026-05-18",
+      "ticker": "VGEA",
+      "isin": "IE00BH04GL39",
+      "tipo": "PAC",
+      "quote": 1.053429,
+      "prezzo": 23.732,
+      "importo": 25,
+      "comm": 0,
+      "note": ""
+    }
+  ],
+  "prezzi": {
+    "EIMI": {
+      "prezzo": 47.94,
+      "data": "2026-07-12"
+    },
+    "SMEA": {
+      "prezzo": 104.25,
+      "data": "2026-07-10"
+    },
+    "VWCE": {
+      "prezzo": 166.77,
+      "data": "2026-07-10"
+    },
+    "IBCI": {
+      "prezzo": 236.76,
+      "data": "2026-07-12"
+    },
+    "VGEA": {
+      "prezzo": 23.99,
+      "data": "2026-07-10"
+    },
+    "SGLN": {
+      "prezzo": 69.98,
+      "data": "2026-07-10"
+    },
+    "CSBGE3": {
+      "prezzo": 116.37,
+      "data": "2026-07-10"
+    },
+    "XDEV": {
+      "prezzo": 0,
+      "data": ""
+    },
+    "XEON": {
+      "prezzo": 149.5975,
+      "data": "2026-07-09"
+    },
+    "AASI": {
+      "prezzo": 58.8,
+      "data": "2026-07-10"
+    }
+  },
+  "stipendi": {
+    "02/2026": 1898.26,
+    "03/2026": 1928.77,
+    "04/2026": 2607.49,
+    "05/2026": 1957,
+    "06/2026": 3615
+  },
+  "spese": {
+    "02/2026": 2287.92,
+    "03/2026": 1153.36,
+    "04/2026": 1158.21,
+    "05/2026": 1974,
+    "06/2026": 2143
+  },
+  "targets": {
+    "EIMI": 10,
+    "SMEA": 25,
+    "VWCE": 35,
+    "IBCI": 10,
+    "VGEA": 0,
+    "SGLN": 5,
+    "CSBGE3": 15,
+    "XDEV": 0,
+    "XEON": 0,
+    "AASI": 0
+  }
+}
