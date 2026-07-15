@@ -3,7 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>PAC ETF Tracker</title>
+<title>PAC ETF Tracker v2</title>
+<!-- Versione: v2 - tema scuro, note ETF, backup esteso, duplicati, stampa riepilogo, andamento migliorato -->
 <style>
 :root {
   --blue:#1a56db; --blue-light:#ebf5ff; --blue-dark:#1341a8;
@@ -97,7 +98,6 @@ canvas{display:block;width:100%!important}
 .badge-green{background:var(--green-light);color:var(--green)}
 .badge-red{background:var(--red-light);color:var(--red)}
 .badge-purple{background:var(--purple-light);color:var(--purple)}
-tr.row-vendita td{background:#fff5f5!important}
 
 /* RIBILANCIAMENTO */
 .ribilanciamento-bar{height:8px;border-radius:4px;background:var(--gray-200);overflow:hidden;margin-top:3px}
@@ -167,6 +167,53 @@ th.sort-asc,th.sort-desc{color:var(--blue)}
 /* DASHBOARD SPARKLINE */
 .sparkline-canvas{height:40px!important}
 
+
+/* THEME / FILTRI / PRINT */
+body.dark{
+  --blue:#60a5fa; --blue-light:#172554; --blue-dark:#93c5fd;
+  --green:#34d399; --green-light:#064e3b;
+  --red:#f87171; --red-light:#450a0a;
+  --yellow:#713f12; --gold:#fbbf24;
+  --purple:#a78bfa; --purple-light:#2e1065;
+  --gray-50:#111827; --gray-100:#0f172a; --gray-200:#374151;
+  --gray-300:#4b5563; --gray-400:#9ca3af; --gray-600:#d1d5db;
+  --gray-700:#e5e7eb; --gray-800:#f9fafb;
+  --hbg:#0b1220;
+  background:#0b1220;color:#e5e7eb;
+}
+body.dark #tabs, body.dark .card, body.dark .chart-box, body.dark .kpi,
+body.dark #edit-modal, body.dark #mini-cal{background:#111827;color:#e5e7eb;border-color:#374151}
+body.dark input[type=text], body.dark input[type=number], body.dark input[type=date], body.dark select{
+  background:#0f172a;color:#e5e7eb;border-color:#4b5563;
+}
+body.dark tr:nth-child(even) td{background:#0f172a}
+body.dark td.ic{background:#3f2f08}
+body.dark td.fc{background:#172554}
+body.dark th{background:#1f2937;color:#e5e7eb;border-color:#374151}
+body.dark td{border-color:#374151}
+body.dark .card-note{background:#422006;color:#fde68a;border-left-color:#f59e0b}
+body.dark .btn{color:white}
+#theme-btn{min-width:86px}
+#reg-count.filters-active{color:var(--red)!important;font-weight:800;font-size:11px!important}
+#reg-reset-btn{display:none}
+
+@media print{
+  body.print-riepilogo{background:white!important;color:#111827!important}
+  body.print-riepilogo #app-header,
+  body.print-riepilogo #tabs,
+  body.print-riepilogo .tab-content:not(#tab-riepilogo),
+  body.print-riepilogo #riepilogo-kpi{display:none!important}
+  body.print-riepilogo #tab-riepilogo{display:block!important;padding:0!important}
+  body.print-riepilogo .card{display:block!important;border:1px solid #ddd!important;box-shadow:none!important;break-inside:avoid;margin-bottom:10px!important}
+  body.print-riepilogo .card-header{background:#1e3a5f!important;color:white!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  body.print-riepilogo .card-note{display:none!important}
+  body.print-riepilogo .tbl-wrap{overflow:visible!important}
+  body.print-riepilogo input{border:none!important;background:transparent!important;color:#111827!important}
+  body.print-riepilogo button{display:none!important}
+  @page{size:A4 landscape;margin:10mm}
+}
+
+
 @media(max-width:600px){
   .kpi-value{font-size:15px}
   .add-form{grid-template-columns:1fr 1fr}
@@ -182,6 +229,7 @@ th.sort-asc,th.sort-desc{color:var(--blue)}
     <span id="hdr-sub">Piano di Accumulo Capitale</span>
   </div>
   <div id="hdr-right">
+    <button class="btn" id="theme-btn" onclick="toggleTheme()" style="font-size:11px;background:rgba(255,255,255,.15);color:white">🌙 Tema</button>
     <button class="btn btn-warn" onclick="exportJSON()" style="font-size:11px">⬇ Backup JSON</button>
     <label class="btn btn-purple" style="cursor:pointer;font-size:11px">⬆ Importa JSON<input type="file" accept=".json" style="display:none" onchange="importJSON(event)"></label>
     <span id="hdr-date" style="font-size:11px;opacity:.7"></span>
@@ -249,7 +297,7 @@ th.sort-asc,th.sort-desc{color:var(--blue)}
       <div class="card-note">Tutti i campi della tabella sono modificabili direttamente. Aggiungi nuovi ETF tramite il form in basso; le altre sezioni si aggiornano in tempo reale.</div>
       <div class="tbl-wrap">
         <table>
-          <thead><tr><th>Ticker</th><th>ISIN</th><th>Nome</th><th>Tipo Asset</th><th>Asset Class</th><th>Aliquota</th><th>Importo PAC (€)</th><th>Giorno PAC</th><th></th></tr></thead>
+          <thead><tr><th>Ticker</th><th>ISIN</th><th>Nome</th><th>Tipo Asset</th><th>Asset Class</th><th>Aliquota</th><th>Importo PAC (€)</th><th>Giorno PAC</th><th>Note ETF</th><th></th></tr></thead>
           <tbody id="config-tbody"></tbody>
         </table>
       </div>
@@ -262,6 +310,7 @@ th.sort-asc,th.sort-desc{color:var(--blue)}
         <div class="fg"><label>Aliquota %</label><input type="number" id="n-aliq" value="26" min="0" max="100" step="0.01" style="width:80px" title="Inserisci aliquota in %"></div>
         <div class="fg"><label>Importo PAC</label><input type="text" id="n-pac" placeholder="1 quota / 50"></div>
         <div class="fg"><label>Giorno</label><input type="number" id="n-giorno" min="1" max="31" value="23"></div>
+        <div class="fg"><label>Note ETF</label><input type="text" id="n-note-etf" placeholder="sospeso PAC, da vendere…"></div>
         <div class="fg"><label>&nbsp;</label><button class="btn btn-primary" onclick="addEtf()">+ Aggiungi ETF</button></div>
       </div>
       <div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--gray-200);font-size:11px;color:var(--gray-400)">
@@ -274,14 +323,14 @@ th.sort-asc,th.sort-desc{color:var(--blue)}
 <!-- ==================== REGISTRO ACQUISTI ==================== -->
 <div id="tab-registro" class="tab-content">
   <div class="card">
-    <div class="card-header">REGISTRO ACQUISTI – PAC + Spot + Vendite
+    <div class="card-header">REGISTRO ACQUISTI – PAC + Spot
       <div style="display:flex;gap:6px">
         <button class="btn btn-success btn-sm" onclick="exportCSV()">⬇ CSV</button>
         <label class="btn btn-primary btn-sm" style="cursor:pointer">⬆ CSV<input type="file" accept=".csv" style="display:none" onchange="importCSV(event)"></label>
       </div>
     </div>
     <div class="card-body">
-      <div class="card-note">Seleziona il Ticker → ISIN e dati si compilano automaticamente. <strong>Importo</strong> = Quote × Prezzo (e viceversa: inserisci Importo + Prezzo per calcolare le Quote automaticamente). Per le <strong>Vendite</strong> inserisci quote e prezzo di vendita: le quote vengono sottratte dal portafoglio.</div>
+      <div class="card-note">Seleziona il Ticker → ISIN e dati si compilano automaticamente. <strong>Importo</strong> = Quote × Prezzo (e viceversa: inserisci Importo + Prezzo per calcolare le Quote automaticamente).</div>
       <div class="add-form">
         <div class="fg"><label>Data*</label>
           <div class="cal-wrap" id="cal-wrap-r">
@@ -290,7 +339,7 @@ th.sort-asc,th.sort-desc{color:var(--blue)}
             <div id="mini-cal" data-target="r-data"></div>
           </div></div>
         <div class="fg"><label>Ticker*</label><select id="r-ticker" onchange="autoFillRegistro()"></select></div>
-        <div class="fg"><label>Tipo</label><select id="r-tipo"><option>PAC</option><option>SPOT</option><option>VENDITA</option></select></div>
+        <div class="fg"><label>Tipo</label><select id="r-tipo"><option>PAC</option><option>SPOT</option></select></div>
         <div class="fg"><label>N. Quote</label><input type="number" id="r-quote" step="0.000001" min="0" placeholder="1" oninput="calcImporto()"></div>
         <div class="fg"><label>Prezzo/Quota (€)</label><input type="number" id="r-prezzo" step="0.01" min="0" oninput="calcImporto()"></div>
         <div class="fg"><label>Importo Tot. (€)</label><input type="number" id="r-importo" step="0.01" min="0" placeholder="auto" oninput="calcQuote()"></div>
@@ -307,12 +356,11 @@ th.sort-asc,th.sort-desc{color:var(--blue)}
           <option value="">Tutti i tipi</option>
           <option value="PAC">PAC</option>
           <option value="SPOT">SPOT</option>
-          <option value="VENDITA">VENDITA</option>
         </select>
         <input type="text" id="flt-note" placeholder="Cerca nelle note…" oninput="renderRegistro()">
         <input type="text" id="flt-data-da" placeholder="Da GG/MM/AAAA" maxlength="10" oninput="renderRegistro()" style="max-width:130px">
         <input type="text" id="flt-data-a" placeholder="A GG/MM/AAAA" maxlength="10" oninput="renderRegistro()" style="max-width:130px">
-        <button class="btn btn-warn btn-sm" onclick="resetFiltriRegistro()">✕ Reset</button>
+        <button class="btn btn-warn btn-sm" id="reg-reset-btn" onclick="resetFiltriRegistro()">✕ Reset filtri</button>
         <span id="reg-count" style="font-size:10px;color:var(--gray-400);margin-left:4px"></span>
       </div>
       <div class="tbl-wrap" style="margin-top:4px">
@@ -371,7 +419,7 @@ th.sort-asc,th.sort-desc{color:var(--blue)}
 
   <!-- PORTAFOGLIO -->
   <div class="card">
-    <div class="card-header">RIEPILOGO PORTAFOGLIO – Situazione Corrente</div>
+    <div class="card-header">RIEPILOGO PORTAFOGLIO – Situazione Corrente <button class="btn btn-sm" onclick="printRiepilogo()" style="background:rgba(255,255,255,.16);color:white">🖨 Stampa / PDF</button></div>
     <div class="card-body">
       <div class="card-note">Aggiornato automaticamente da Registro + Prezzi Correnti. Aggiorna i prezzi prima della consultazione.</div>
       <div class="tbl-wrap">
@@ -395,7 +443,7 @@ th.sort-asc,th.sort-desc{color:var(--blue)}
     <div class="card-body">
       <div class="card-note">
         Inserisci <strong>Stipendio Netto</strong> e <strong>Spese Mensili</strong> per calcolare quante risorse rimangono e che % stai investendo.<br>
-        <strong>% su stipendio</strong> = Netto investito / Stipendio &nbsp;|&nbsp;
+        <strong>% su stipendio</strong> = Totale investito / Stipendio &nbsp;|&nbsp;
         <strong>% su disponibile</strong> = Totale investito / (Stipendio + Liquidità Aggiuntiva − Spese) — più significativa.
       </div>
       <div class="tbl-wrap">
@@ -405,8 +453,7 @@ th.sort-asc,th.sort-desc{color:var(--blue)}
             <th>N. Op.</th>
             <th>PAC (€)</th>
             <th>SPOT (€)</th>
-            <th style="color:var(--red)">VEND (€)</th>
-            <th>Netto inv. (€)</th>
+            <th>Totale inv. (€)</th>
             <th>Comm. (€)</th>
             <th>Stipendio Netto (€) ✏️</th>
             <th>Liquidità Aggiuntiva (€) ✏️</th>
@@ -428,7 +475,7 @@ th.sort-asc,th.sort-desc{color:var(--blue)}
   <div class="card">
     <div class="card-header">ANDAMENTO CUMULATIVO – Investito vs Valore di Mercato per Mese</div>
     <div class="card-body">
-      <div class="card-note">Grafico basato sui prezzi storici degli acquisti (approssimazione). Il valore di mercato mensile è stimato usando i prezzi di acquisto come proxy.</div>
+      <div class="card-note">Mostra il capitale totale versato mese per mese contro il valore di mercato stimato delle quote possedute nello stesso mese. Con i dati disponibili nel file, la stima usa i prezzi di acquisto come snapshot storici e il prezzo corrente per l'ultimo mese: aggiorna spesso i prezzi per rendere la curva più utile.</div>
       <div style="position:relative;height:260px"><canvas id="andamento-chart"></canvas></div>
     </div>
   </div>
@@ -503,11 +550,14 @@ th.sort-asc,th.sort-desc{color:var(--blue)}
       <div class="guide-section">
         <h3>Come iniziare</h3>
         <ol>
-          <li><strong>⚙️ Configurazione:</strong> verifica l'anagrafica ETF. Tutti i campi sono editabili. Aggiungi nuovi ETF con il form in basso.</li>
-          <li><strong>💹 Prezzi Correnti:</strong> clicca sul link justETF di ogni ETF → copia il prezzo → incollalo → Salva & Aggiorna.</li>
-          <li><strong>📝 Registro:</strong> inserisci ogni acquisto. Scegli il ticker dal dropdown → ISIN e dati si compilano automaticamente.</li>
-          <li><strong>📈 Riepilogo:</strong> aggiornato automaticamente. Mostra PMC, P&L e tasse stimate.</li>
-          <li><strong>⚖️ Ribilanciamento:</strong> imposta i % target e scopri quanto acquistare per riportare il portafoglio in linea.</li>
+          <li><strong>🌙 Tema:</strong> se preferisci lavorare in modalità scura, usa il pulsante “Tema” nell'header. La scelta resta salvata nel browser.</li>
+          <li><strong>⚙️ Configurazione:</strong> verifica l'anagrafica ETF. Tutti i campi sono editabili: ticker, ISIN, nome, tipo asset, asset class, aliquota, importo/giorno PAC e <strong>Note ETF</strong>. Usa le note per promemoria rapidi come “sospeso PAC” o “da vendere sopra 200€”.</li>
+          <li><strong>💹 Prezzi Correnti:</strong> clicca sul link justETF di ogni ETF → copia il prezzo → incollalo → Salva & Aggiorna. Prezzi aggiornati rendono più affidabili riepilogo, allocazione e andamento.</li>
+          <li><strong>📝 Registro:</strong> inserisci ogni acquisto. Scegli il ticker dal dropdown → ISIN e dati si compilano automaticamente. Se l'app trova stessa data, stesso ticker e importo simile entro ±0,01 €, chiede conferma prima di salvare per evitare duplicati.</li>
+          <li><strong>🔍 Filtri Registro:</strong> usa ticker, tipo, note o intervallo date per cercare operazioni. Quando i filtri riducono la lista, il contatore diventa rosso/grassetto e compare “✕ Reset filtri”.</li>
+          <li><strong>📈 Riepilogo:</strong> aggiornato automaticamente. Mostra PMC, P&L e tasse stimate. Usa “🖨 Stampa / PDF” per stampare solo Portafoglio e Mensile; in Chrome/Edge seleziona “Salva come PDF”.</li>
+          <li><strong>📉 Andamento:</strong> confronta il capitale totale investito mese per mese con il valore di mercato stimato delle quote possedute nello stesso periodo. Serve a capire se il portafoglio sta crescendo oltre i semplici versamenti.</li>
+          <li><strong>⚖️ Ribilanciamento:</strong> imposta i % target per ETF e, nella Dashboard, i target macro. Le tabelle e i grafici mostrano gli scostamenti rispetto all'allocazione desiderata.</li>
         </ol>
       </div>
       <div class="guide-section">
@@ -519,6 +569,7 @@ th.sort-asc,th.sort-desc{color:var(--blue)}
           <li><strong>P&L Lordo:</strong> Valore Mercato − Valore Investito</li>
           <li><strong>Tasse Stimate:</strong> MAX(0, P&L Lordo) × Aliquota</li>
           <li><strong>P&L Netto:</strong> P&L Lordo − Tasse Stimate</li>
+          <li><strong>Andamento cumulativo:</strong> la linea “Totale investito” somma i versamenti progressivi; la linea “Valore di mercato stimato” moltiplica le quote possedute per il prezzo disponibile nel periodo. Per i mesi storici usa i prezzi di acquisto come stima; per l'ultimo mese usa i prezzi correnti inseriti nella scheda Prezzi.</li>
         </ul>
       </div>
       <div class="guide-section">
@@ -534,10 +585,9 @@ th.sort-asc,th.sort-desc{color:var(--blue)}
         <h3>Backup e sincronizzazione multi-dispositivo</h3>
         <ul>
           <li>I dati sono salvati nel <strong>localStorage</strong> del browser — persistono finché non svuoti la cache.</li>
-          <li>Usa <strong>⬇ Backup JSON</strong> (header) per esportare tutti i dati (ETF, acquisti, prezzi, target, stipendi).</li>
+          <li>Usa <strong>⬇ Backup JSON</strong> (header) per esportare tutti i dati: ETF, note ETF, acquisti, prezzi, target ETF, target macro, stipendi, spese e liquidità aggiuntiva.</li>
           <li>Usa <strong>⬆ Importa JSON</strong> per ripristinare su un altro dispositivo in un click.</li>
           <li>Per il Registro acquisti puoi usare anche Esporta/Importa CSV.</li>
-    <li>Le <strong>Vendite</strong> (tipo VENDITA) sottraggono le quote dal portafoglio. Il P&L realizzato è visibile nel Riepilogo come differenza tra valore di mercato e costo medio.</li>
           <li>Google Drive può aprire questo file ma <em>non salva lo stato</em> tra dispositivi — usa il backup JSON.</li>
         </ul>
       </div>
@@ -556,12 +606,12 @@ th.sort-asc,th.sort-desc{color:var(--blue)}
 <!-- ==================== MODALE MODIFICA ACQUISTO ==================== -->
 <div id="edit-modal-overlay" onclick="if(event.target===this)closeEditModal()">
   <div id="edit-modal">
-    <h3>✏️ Modifica operazione</h3>
+    <h3>✏️ Modifica acquisto</h3>
     <div class="edit-grid">
       <div class="fg"><label>Data (GG/MM/AAAA)*</label><input type="text" id="em-data" placeholder="GG/MM/AAAA" maxlength="10"></div>
       <div class="fg"><label>Ticker*</label><select id="em-ticker" onchange="emAutoFill()"></select></div>
       <div class="fg"><label>Tipo</label>
-        <select id="em-tipo"><option>PAC</option><option>SPOT</option><option>VENDITA</option></select>
+        <select id="em-tipo"><option>PAC</option><option>SPOT</option></select>
       </div>
       <div class="fg"><label>N. Quote</label><input type="number" id="em-quote" step="0.000001" min="0" oninput="emCalcImporto()"></div>
       <div class="fg"><label>Prezzo/Quota (€)</label><input type="number" id="em-prezzo" step="0.0001" min="0" oninput="emCalcImporto()"></div>
@@ -599,7 +649,7 @@ let spese    = ld('pac_spese', {});
 let extra    = ld('pac_extra', {});
 let targets  = ld('pac_tgt',  DEFAULT_TARGETS);
 
-function saveAll(){sv('pac_etf',etfList);sv('pac_acq',acquisti);sv('pac_prz',prezzi);sv('pac_stip',stipendi);sv('pac_spese',spese);sv('pac_extra',extra);sv('pac_tgt',targets)}
+function saveAll(){sv('pac_etf',etfList);sv('pac_acq',acquisti);sv('pac_prz',prezzi);sv('pac_stip',stipendi);sv('pac_spese',spese);sv('pac_extra',extra);sv('pac_tgt',targets);sv('pac_macro_tgt',macroTargets)}
 
 // ===================== UTILS =====================
 const PIE_COLORS=['#1a56db','#057a55','#e3a008','#e02424','#9061f9','#0694a2','#ff8c00','#6b7280','#10b981','#f59e0b'];
@@ -616,6 +666,69 @@ function fd(d){
 }
 function cpn(n){return n>0.001?'pos':n<-0.001?'neg':'neu'}
 function getEtf(ticker){return etfList.find(e=>e.ticker===ticker)}
+function escAttr(v){return String(v??'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+function getCurrentMonthKey(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')}
+function addMonthsKey(key,n){const [y,m]=key.split('-').map(Number);const d=new Date(y,m-1+n,1);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')}
+function monthRangeKeys(start,end){const out=[];if(!start||!end)return out;let k=start;let guard=0;while(k<=end&&guard<600){out.push(k);k=addMonthsKey(k,1);guard++;}return out}
+function buildMonthlyMarketSeries(data){
+  const sorted=[...acquisti].filter(a=>a.data).sort((a,b)=>a.data.localeCompare(b.data));
+  if(!sorted.length) return {labels:[],invested:[],market:[]};
+  const firstKey=sorted[0].data.substring(0,7);
+  const lastPurchaseKey=sorted[sorted.length-1].data.substring(0,7);
+  const endKey=[lastPurchaseKey,getCurrentMonthKey()].sort().pop();
+  const months=monthRangeKeys(firstKey,endKey);
+  const byMonth={};
+  sorted.forEach(a=>{
+    const key=a.data.substring(0,7);
+    if(!byMonth[key]) byMonth[key]=[];
+    byMonth[key].push(a);
+  });
+  const tickers=[...new Set([...etfList.map(e=>e.ticker),...sorted.map(a=>a.ticker)])];
+  const qty={}, investedByTicker={}, lastPrice={};
+  tickers.forEach(t=>{qty[t]=0;investedByTicker[t]=0;lastPrice[t]=0});
+  const labels=[], invested=[], market=[];
+  months.forEach((m,idx)=>{
+    const events=byMonth[m]||[];
+    const monthValueByTicker={};
+    const monthQtyByTicker={};
+    events.forEach(a=>{
+      const t=a.ticker;
+      if(qty[t]===undefined){qty[t]=0;investedByTicker[t]=0;lastPrice[t]=0}
+      qty[t]+=(+a.quote||0);
+      investedByTicker[t]+=(+a.importo||0);
+      monthValueByTicker[t]=(monthValueByTicker[t]||0)+(+a.importo||0);
+      monthQtyByTicker[t]=(monthQtyByTicker[t]||0)+(+a.quote||0);
+    });
+    Object.keys(monthQtyByTicker).forEach(t=>{
+      if(monthQtyByTicker[t]>0) lastPrice[t]=monthValueByTicker[t]/monthQtyByTicker[t];
+    });
+    const isLast=idx===months.length-1;
+    let inv=0, vm=0;
+    tickers.forEach(t=>{
+      inv += investedByTicker[t]||0;
+      const current=prezzi[t]?.prezzo||0;
+      const px = isLast && current>0 ? current : (lastPrice[t] || current || 0);
+      vm += (qty[t]||0)*px;
+    });
+    labels.push(m);
+    invested.push(+inv.toFixed(2));
+    market.push(+vm.toFixed(2));
+  });
+  return {labels,invested,market};
+}
+
+// ===================== TEMA =====================
+function applyTheme(theme){
+  const dark = theme === 'dark';
+  document.body.classList.toggle('dark', dark);
+  const btn=document.getElementById('theme-btn');
+  if(btn) btn.textContent = dark ? '☀️ Tema' : '🌙 Tema';
+}
+function toggleTheme(){
+  const next = document.body.classList.contains('dark') ? 'light' : 'dark';
+  sv('pac_theme', next);
+  applyTheme(next);
+}
 
 // ===================== TABS =====================
 function showTab(id,btn){
@@ -639,9 +752,8 @@ function calcPortafoglio(){
   const res={};
   etfList.forEach(etf=>{
     const acq=acquisti.filter(a=>a.ticker===etf.ticker);
-    // acquisti sommano, vendite sottraggono quote e importo
-    const totQ=acq.reduce((s,a)=>a.tipo==='VENDITA'?s-a.quote:s+a.quote,0);
-    const totI=acq.reduce((s,a)=>a.tipo==='VENDITA'?s-a.importo:s+a.importo,0);
+    const totQ=acq.reduce((s,a)=>s+a.quote,0);
+    const totI=acq.reduce((s,a)=>s+a.importo,0);
     const pmc=totQ>0?totI/totQ:0;
     const pc=prezzi[etf.ticker]?.prezzo||0;
     const vm=totQ*pc;
@@ -673,8 +785,6 @@ function renderDashboard(){
     {label:'Tasse Stimate',     value:'€ '+f2(totTasse),sub:'su plusval.', accent:'#e3a008'},
     {label:'P&L Netto',         value:'€ '+f2(totN),    sub:'dopo tasse', accent:totN>=0?'#057a55':'#e02424'},
     {label:'N. ETF attivi',     value:vals.filter(d=>d.totQ>0).length,sub:'in portafoglio',accent:'#9061f9'},
-    (()=>{const pv=acquisti.filter(a=>a.tipo==='VENDITA').reduce((s,a)=>s+a.importo,0);
-     return {label:'Proventi vendite',value:'€ '+f2(pv),sub:'totale incassato',accent:'#e3a008'};})()
   ];
   document.getElementById('kpi-grid').innerHTML=kpis.map(k=>`
     <div class="kpi" style="--accent:${k.accent}">
@@ -690,33 +800,9 @@ function renderDashboard(){
 }
 
 function renderDashLine(data){
-  // Build monthly cumulative invested and estimated market value
-  const byMese={};
-  const sorted=[...acquisti].sort((a,b)=>a.data.localeCompare(b.data));
-  sorted.forEach(a=>{
-    const d=new Date(a.data);
-    const key=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');
-    if(!byMese[key]) byMese[key]={inv:0,vm:0};
-    if(a.tipo==='VENDITA'){ byMese[key].inv-=a.importo; byMese[key].vm-=a.importo; }
-    else { byMese[key].inv+=a.importo; byMese[key].vm+=a.importo; } // proxy
-  });
-  const mesi=Object.keys(byMese).sort();
-  let cumI=0,cumVM=0;
-  const labels=[],dI=[],dVM=[];
-  mesi.forEach(m=>{
-    cumI+=byMese[m].inv;
-    cumVM+=byMese[m].vm;
-    labels.push(m);
-    dI.push(+cumI.toFixed(2));
-    dVM.push(+cumVM.toFixed(2));
-  });
-  // Last point: use real market value
-  const totVM=Object.values(data).reduce((s,d)=>s+d.vm,0);
-  if(labels.length>0){
-    dVM[dVM.length-1]=+totVM.toFixed(2);
-  }
-  drawLineChart('dash-line-chart',labels,
-    [{label:'Investito',data:dI,color:'#9ca3af'},{label:'Valore Mercato',data:dVM,color:'#1a56db'}]);
+  const series = buildMonthlyMarketSeries(data);
+  drawLineChart('dash-line-chart',series.labels,
+    [{label:'Totale investito',data:series.invested,color:'#9ca3af'},{label:'Valore di mercato stimato',data:series.market,color:'#1a56db'}]);
 }
 
 function renderDashPie(data){
@@ -863,6 +949,7 @@ function renderConfig(){
       <td class="ic"><input type="number" value="${(etf.aliquota*100).toFixed(2)}" min="0" max="100" step="0.01" style="width:70px" title="Aliquota %" onchange="etfList[${i}].aliquota=(+this.value||0)/100;saveAll()"></td>
       <td class="ic"><input type="text" value="${etf.pac}" onchange="etfList[${i}].pac=this.value;saveAll()" style="width:75px"></td>
       <td class="ic"><input type="number" value="${etf.giorno}" onchange="etfList[${i}].giorno=+this.value;saveAll()" style="width:55px" min="1" max="31"></td>
+      <td class="ic"><input type="text" value="${escAttr(etf.noteEtf||'')}" onchange="etfList[${i}].noteEtf=this.value;saveAll()" style="width:190px" placeholder="note rapide"></td>
       <td><button class="btn btn-danger btn-sm" onclick="removeEtf(${i})">✕</button></td>
     </tr>`;
   });
@@ -875,8 +962,8 @@ function addEtf(){
   etfList.push({ticker:t,isin:document.getElementById('n-isin').value.trim(),nome:document.getElementById('n-nome').value.trim(),
     tipo:document.getElementById('n-tipo').value,classe:document.getElementById('n-class').value.trim(),
     aliquota:(+document.getElementById('n-aliq').value||26)/100,pac:document.getElementById('n-pac').value.trim(),
-    giorno:+document.getElementById('n-giorno').value||23});
-  ['n-tick','n-isin','n-nome','n-class','n-pac'].forEach(id=>document.getElementById(id).value='');
+    giorno:+document.getElementById('n-giorno').value||23,noteEtf:document.getElementById('n-note-etf').value.trim()});
+  ['n-tick','n-isin','n-nome','n-class','n-pac','n-note-etf'].forEach(id=>document.getElementById(id).value='');
   saveAll();renderConfig();
 }
 
@@ -953,6 +1040,8 @@ function renderRegistro(){
   const fDataDa  = _parseIsoFromDisplay(document.getElementById('flt-data-da')?.value||'');
   const fDataA   = _parseIsoFromDisplay(document.getElementById('flt-data-a')?.value||'');
 
+  const filtriAttivi = !!(fTicker || fTipo || fNote || fDataDa || fDataA);
+
   // --- Filtraggio ---
   let lista = acquisti.map((a,i)=>({...a, _origIdx:i}));
   if(fTicker) lista = lista.filter(a=>a.ticker.toLowerCase().includes(fTicker));
@@ -1015,7 +1104,7 @@ function renderRegistro(){
       +'<td>'+fd(a.data)+'</td>'
       +'<td><strong>'+a.ticker+'</strong></td>'
       +'<td style="font-size:10px;color:var(--gray-400)">'+(a.isin||'–')+'</td>'
-      +'<td><span class="badge '+(a.tipo==='PAC'?'badge-blue':a.tipo==='VENDITA'?'badge-red':'badge-green')+'">'+a.tipo+'</span></td>'
+      +'<td><span class="badge '+(a.tipo==='PAC'?'badge-blue':'badge-green')+'">'+a.tipo+'</span></td>'
       +'<td>'+f4(a.quote)+'</td>'
       +'<td>'+f4(a.prezzo)+'</td>'
       +'<td class="fc"><strong>'+f2(a.importo)+'</strong></td>'
@@ -1029,13 +1118,16 @@ function renderRegistro(){
   tbody.innerHTML=rows.join('');
 
   tfoot.innerHTML=`<tr style="background:var(--gray-100);font-weight:700">
-    <td colspan="7">TOTALE FILTRATI (${lista.length})</td>
-    <td style="color:var(--green)">▲ ${f2(totInv)}</td>
-    <td style="color:var(--red)">▼ ${f2(totVendite)}</td>
-    <td>${f2(totComm)}</td><td colspan="2"></td></tr>`;
+    <td colspan="8">TOTALE FILTRATI (${lista.length})</td>
+    <td>${f2(totInv)}</td><td>${f2(totComm)}</td><td colspan="2"></td></tr>`;
 
   const cnt=document.getElementById('reg-count');
-  if(cnt) cnt.textContent=lista.length+' / '+acquisti.length+' operazioni';
+  if(cnt){
+    cnt.textContent=lista.length+' / '+acquisti.length+' operazioni';
+    cnt.classList.toggle('filters-active', filtriAttivi && lista.length < acquisti.length);
+  }
+  const resetBtn=document.getElementById('reg-reset-btn');
+  if(resetBtn) resetBtn.style.display = filtriAttivi ? 'inline-block' : 'none';
 }
 
 function addAcquisto(){
@@ -1055,6 +1147,8 @@ function addAcquisto(){
   } else {
     isoData=new Date().toISOString().split('T')[0];
   }
+  const dup = acquisti.find(a=>a.data===isoData && a.ticker===ticker && Math.abs((+a.importo||0)-(+importo||0))<=0.01);
+  if(dup && !confirm('Possibile duplicato trovato: stessa data, stesso ticker e importo simile (±0,01 €).\n\nVuoi inserirlo comunque?')) return;
   acquisti.push({
     data:isoData,
     ticker,isin:etf?etf.isin:'',tipo:document.getElementById('r-tipo').value,
@@ -1286,22 +1380,21 @@ function renderMensile(){
     const[ma,ya]=a.split('/');const[mb,yb]=b.split('/');
     return(ya-yb)||(ma-mb);
   });
-  let tP=0,tS=0,tV=0,tC=0,tN=0;
+  let tP=0,tS=0,tC=0,tN=0;
   const tbody=document.getElementById('mensile-tbody');
   if(!tbody)return;
   tbody.innerHTML='';
   mesi.forEach(mese=>{
     const m=byMese[mese];
     const tot=m.pac+m.spot;
-    const netto=tot-(m.vend||0);
     const stip=stipendi[mese]||0;
     const spe=spese[mese]||0;
     const ext=extra[mese]||0;
     const reddito=stip+ext;
     const disp=reddito>0?Math.max(0,reddito-spe):0;
-    const pctStip=stip>0?netto/stip:null;
-    const pctDisp=disp>0?netto/disp:null;
-    tP+=m.pac;tS+=m.spot;tV+=(m.vend||0);tC+=m.comm;tN+=m.n;
+    const pctStip=stip>0?tot/stip:null;
+    const pctDisp=disp>0?tot/disp:null;
+    tP+=m.pac;tS+=m.spot;tC+=m.comm;tN+=m.n;
 
     // Color % su disponibile: verde <30%, giallo 30-50%, rosso >50%
     const colorDisp=pctDisp===null?'var(--gray-600)':pctDisp<0.3?'var(--green)':pctDisp<0.5?'var(--gold)':'var(--red)';
@@ -1312,8 +1405,7 @@ function renderMensile(){
       <td>${m.n}</td>
       <td>${f2(m.pac)}</td>
       <td>${f2(m.spot)}</td>
-      <td style="color:var(--red)">${(m.vend||0)>0?'▼ '+f2(m.vend||0):'–'}</td>
-      <td><strong>${f2(netto)}</strong></td>
+      <td><strong>${f2(tot)}</strong></td>
       <td>${f2(m.comm)}</td>
       <td class="ic"><input type="number" value="${stip||''}" placeholder="es. 2500" style="width:90px"
         onchange="stipendi['${mese}']=+this.value||0;saveAll();renderMensile()" step="0.01" min="0"></td>
@@ -1331,38 +1423,14 @@ function renderMensile(){
   const tfoot=document.getElementById('mensile-tfoot');
   if(tfoot) tfoot.innerHTML=`<tr style="font-weight:700;background:var(--gray-100)">
     <td>TOTALE</td><td>${tN}</td><td>${f2(tP)}</td><td>${f2(tS)}</td>
-    <td style="color:var(--red)">${tV>0?'▼ '+f2(tV):'–'}</td>
-    <td>${f2(tP+tS-tV)}</td><td>${f2(tC)}</td><td colspan="5">–</td>
+    <td>${f2(tP+tS)}</td><td>${f2(tC)}</td><td colspan="6">–</td>
   </tr>`;
 }
 function renderAndamento(){
   const data=calcPortafoglio();
-  // Monthly cumulative
-  const byMese={};
-  const sorted=[...acquisti].sort((a,b)=>a.data.localeCompare(b.data));
-  sorted.forEach(a=>{
-    const d=new Date(a.data);
-    const key=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');
-    if(!byMese[key]) byMese[key]={inv:0};
-    if(a.tipo==='VENDITA') byMese[key].inv-=a.importo;
-    else byMese[key].inv+=a.importo;
-  });
-  const mesi=Object.keys(byMese).sort();
-  let cumI=0;
-  const labels=[],dI=[],dVM=[];
-  mesi.forEach((m,idx)=>{
-    cumI+=byMese[m].inv;
-    labels.push(m);
-    dI.push(+cumI.toFixed(2));
-    // For last month use real market, otherwise use invested as proxy
-    if(idx===mesi.length-1){
-      dVM.push(+Object.values(data).reduce((s,d)=>s+d.vm,0).toFixed(2));
-    } else {
-      dVM.push(+cumI.toFixed(2)); // proxy
-    }
-  });
-  drawLineChart('andamento-chart',labels,
-    [{label:'Cumulativo Investito',data:dI,color:'#9ca3af'},{label:'Valore di Mercato (stimato)',data:dVM,color:'#1a56db'}]);
+  const series = buildMonthlyMarketSeries(data);
+  drawLineChart('andamento-chart',series.labels,
+    [{label:'Totale investito',data:series.invested,color:'#9ca3af'},{label:'Valore di mercato stimato',data:series.market,color:'#1a56db'}]);
 
   // Bar chart performance
   const active=Object.values(data).filter(d=>d.totQ>0).sort((a,b)=>b.plPct-a.plPct);
@@ -1452,9 +1520,18 @@ function saveTargets(){
   setTimeout(()=>note.textContent='',3000);
 }
 
-// ===================== ANDAMENTO =====================
+// ===================== STAMPA / BACKUP =====================
+function printRiepilogo(){
+  showTab('riepilogo');
+  setTimeout(()=>{
+    document.body.classList.add('print-riepilogo');
+    window.print();
+    setTimeout(()=>document.body.classList.remove('print-riepilogo'),800);
+  },100);
+}
+
 function exportJSON(){
-  const state={etfList,acquisti,prezzi,stipendi,spese,targets};
+  const state={etfList,acquisti,prezzi,stipendi,spese,extra,targets,macroTargets,versione:"v2"};
   dl(JSON.stringify(state,null,2),'PAC_ETF_Backup_'+new Date().toISOString().split('T')[0]+'.json','application/json');
 }
 function importJSON(e){
@@ -1470,6 +1547,7 @@ function importJSON(e){
       if(s.spese)    spese   =s.spese;
       if(s.extra)    extra   =s.extra;
       if(s.targets)  targets =s.targets;
+      if(s.macroTargets) macroTargets=s.macroTargets;
       saveAll();renderConfig();renderPrezzi();renderDashboard();
       alert('Importazione completata con successo.');
     }catch{alert('File JSON non valido.')}
@@ -1681,6 +1759,7 @@ function drawGroupedBar(id,labels,datasets){
 
 // ===================== INIT =====================
 document.addEventListener('DOMContentLoaded',()=>{
+  applyTheme(ld('pac_theme','light'));
   document.getElementById('hdr-date').textContent='Oggi: '+new Date().toLocaleDateString('it-IT',{weekday:'short',day:'2-digit',month:'short',year:'numeric'});
   // Pre-popola data registro in GG/MM/AAAA
   const oggi=new Date();
@@ -1784,3 +1863,5 @@ function calPick(day){
 </script>
 </body>
 </html>
+
+<!-- EOF index_backup_v2.html -->
